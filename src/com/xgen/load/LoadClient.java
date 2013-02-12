@@ -86,13 +86,11 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
     }
     
     public void start() {
-        pump.startIntake();
-        pump.startOutput();
+        pump.start();
     }
     
     private void stop() {
-        pump.stopIntake();
-        pump.stopOutput();
+        pump.stop();
     }
 
     public int getItemsProcessed() {
@@ -104,23 +102,22 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
     }
     
     public void report ()  {
-        System.out.println("lines read: "+linesRead+" buffer size"+pump.getQueueSize()+" insertions: "+itemsProcessed);
+        System.out.println("lines read: "+linesRead+" buffer size:"+    pump.getQueueSize()+" insertions: "+itemsProcessed);
     }
     
     @Override
     public void consume( DBObject object) {
         if ( object == null ) {
-            pump.stopIntake();
+            pump.stop();
             return;
         }
         try {
             items.insert(object);
         } catch ( MongoException e ) {
             System.out.println("Stopping output: "+e.getMessage());
-            pump.stopOutput();
+            pump.stop();
         }
         synchronized ( itemsProcessed ) {  itemsProcessed++; }
-        
     }
 
     @Override
@@ -132,7 +129,7 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
             
             if ( currentLine == null ) {
                 System.out.println("Reached end of file. Stopping intake");
-                pump.stopIntake();
+                pump.stop();
                 return null;
             }
             else {
@@ -158,7 +155,7 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
                 // load specific locations is specified otherwise load all
                 if( locations != null && locations.length > 0 ) {
                     for ( String location : locations ) {
-                        if ( Integer.valueOf(location ) == item.getSTR_LOC_NBR_VAL() )
+                        if ( Integer.valueOf(location ) == item.getNBR() )
                             return item.toDBObject();
                     }
                 } 
@@ -211,7 +208,12 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
                 if ( command.equalsIgnoreCase("s") ) client.report();
             }
             
-            System.out.println("Run complete.");
+            System.out.print("Stopping.... ");
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             client.report();
         }
     }

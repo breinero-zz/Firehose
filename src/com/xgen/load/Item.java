@@ -3,37 +3,41 @@ package com.xgen.load;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 
+/**
+* Immutable Object
+*/
 public class Item {
     
     //Column (key) names for the STR BOARD
-    public static final String STR_NBR = "_nbr";
-    public static final String STR_UPC = "upc";
-    public static final String STR_LOC_NBR = "loc_nbr";
-    public static final String STR_AVAIL_TO_SELL = "avail_to_sell";
-    public static final String STR_NOT_AVAIL_THLD_QTY = "not_avail_thld_qty";
-    public static final String STR_FIIS_ANS_CODE = "fiis_ans_code";
-    public static final String STR_NOT_AVAIL_QTY_SITE = "not_avail_qty_site";
-    public static final String STR_NOT_AVAIL_QTY_ESEND = "not_avail_qty_esend";
-    public static final String STR_IN_ROUTE_CODE = "in_route_code";
-    public static final String STR_PHYS_ON_HAND = "phys_on_hand";
-    public static final String STR_CEB_LAST_UPDATED_TS = "ceb_last_updated_ts";
-    public static final String STR_SPACE_UPDATED_TS = "space_updated_ts";
-    public static final String STR_TXN_ID = "txn_id";
+    public static final String NBR_FIELDNAME  = "_nbr";
+    public static final String UPC_FIELDNAME  = "upc";
+    public static final String LOC_NBR_FIELDNAME  = "loc_nbr";
+    public static final String AVAIL_TO_SELL_FIELDNAME  = "avail_to_sell";
+    public static final String NOT_AVAIL_THLD_QTY_FIELDNAME  = "not_avail_thld_qty";
+    public static final String FIIS_ANS_CODE_FIELDNAME  = "fiis_ans_code";
+    public static final String NOT_AVAIL_QTY_SITE_FIELDNAME  = "not_avail_qty_site";
+    public static final String NOT_AVAIL_QTY_ESEND_FIELDNAME  = "not_avail_qty_esend";
+    public static final String IN_ROUTE_CODE_FIELDNAME  = "in_route_code";
+    public static final String PHYS_ON_HAND_FIELDNAME  = "phys_on_hand";
+    public static final String CEB_LAST_UPDATED_TS_FIELDNAME  = "ceb_last_updated_ts";
+    public static final String SPACE_UPDATED_TS_FIELDNAME  = "space_updated_ts";
+    public static final String TXN_ID_FIELDNAME = "txn_id";
     
-    private final int STR_NBR_VAL;
-    private final String STR_UPC_VAL;
-    private final int STR_LOC_NBR_VAL;
-    private final int STR_AVAIL_TO_SELL_VAL;
-    private final int STR_NOT_AVAIL_THLD_QTY_VAL;
-    private final String STR_FIIS_ANS_CODE_VAL;
-    private final int STR_NOT_AVAIL_QTY_SITE_VAL;
-    private final int STR_NOT_AVAIL_QTY_ESEND_VAL;
-    private final int STR_IN_ROUTE_CODE_VAL;
-    private final int STR_PHYS_ON_HAND_VAL;
-    private final long STR_CEB_LAST_UPDATED_TS_VAL;
-    private final long STR_SPACE_UPDATED_TS_VAL;
-    private final int STR_TXN_ID_VAL;
+    private final int NBR;
+    private final String UPC;
+    private final int LOC_NBR;
+    private final int AVAIL_TO_SELL;
+    private final int NOT_AVAIL_THLD_QTY;
+    private final String FIIS_ANS_CODE;
+    private final int NOT_AVAIL_QTY_SITE;
+    private final int NOT_AVAIL_QTY_ESEND;
+    private final int IN_ROUTE_CODE;
+    private final int PHYS_ON_HAND;
+    private final long CEB_LAST_UPDATED_TS;
+    private final long SPACE_UPDATED_TS;
+    private final int TXN_ID;
     
+    public int getNBR() { return NBR; }
     
     public Item(
             int _nbr, 
@@ -49,101 +53,38 @@ public class Item {
             long ceb_last_updated_ts, 
             long space_updated_ts,
             int txn_id) {
-        STR_NBR_VAL = _nbr;
-        STR_LOC_NBR_VAL = loc_nbr;
-        STR_UPC_VAL = upc;
-        STR_AVAIL_TO_SELL_VAL = avail_to_sell;
-        STR_NOT_AVAIL_THLD_QTY_VAL = not_avail_thld_qty;
-        STR_FIIS_ANS_CODE_VAL = fiis_ans_code;
-        STR_NOT_AVAIL_QTY_SITE_VAL = not_avail_qty_site;
-        STR_NOT_AVAIL_QTY_ESEND_VAL = not_avail_qty_esend;
-        STR_IN_ROUTE_CODE_VAL = in_route_code;
-        STR_PHYS_ON_HAND_VAL = phys_on_hand;
-        STR_CEB_LAST_UPDATED_TS_VAL = ceb_last_updated_ts;
-        STR_SPACE_UPDATED_TS_VAL = space_updated_ts;
-        STR_TXN_ID_VAL = txn_id;
+        NBR = _nbr;
+        LOC_NBR = loc_nbr;
+        UPC = upc;
+        AVAIL_TO_SELL = avail_to_sell;
+        NOT_AVAIL_THLD_QTY = not_avail_thld_qty;
+        FIIS_ANS_CODE = fiis_ans_code;
+        NOT_AVAIL_QTY_SITE = not_avail_qty_site;
+        NOT_AVAIL_QTY_ESEND = not_avail_qty_esend;
+        IN_ROUTE_CODE = in_route_code;
+        PHYS_ON_HAND = phys_on_hand;
+        CEB_LAST_UPDATED_TS = ceb_last_updated_ts;
+        SPACE_UPDATED_TS = space_updated_ts;
+        TXN_ID = txn_id;
     }
 
-    public int getSTR_KEY_VAL() {
-        return STR_NBR_VAL;
-    }
-
-
-    public String getSTR_UPC_VAL() {
-        return STR_UPC_VAL;
-    }
-
-
-    public int getSTR_LOC_NBR_VAL() {
-        return STR_LOC_NBR_VAL;
-    }
-
-    public int getSTR_AVAIL_TO_SELL_VAL() {
-        return STR_AVAIL_TO_SELL_VAL;
-    }
-
-
-    public int getSTR_NOT_AVAIL_THLD_QTY_VAL() {
-        return STR_NOT_AVAIL_THLD_QTY_VAL;
-    }
-
-
-    public String getSTR_FIIS_ANS_CODE_VAL() {
-        return STR_FIIS_ANS_CODE_VAL;
-    }
-
-
-    public int getSTR_NOT_AVAIL_QTY_SITE_VAL() {
-        return STR_NOT_AVAIL_QTY_SITE_VAL;
-    }
-
-
-    public int getSTR_NOT_AVAIL_QTY_ESEND_VAL() {
-        return STR_NOT_AVAIL_QTY_ESEND_VAL;
-    }
-
-
-    public int getSTR_IN_ROUTE_CODE_VAL() {
-        return STR_IN_ROUTE_CODE_VAL;
-    }
-
-
-    public long getSTR_PHYS_ON_HAND_VAL() {
-        return STR_PHYS_ON_HAND_VAL;
-    }
-
-
-    public long getSTR_CEB_LAST_UPDATED_TS_VAL() {
-        return STR_CEB_LAST_UPDATED_TS_VAL;
-    }
-
-
-    public long getSTR_SPACE_UPDATED_TS_VAL() {
-        return STR_SPACE_UPDATED_TS_VAL;
-    }
-
-
-    public int getSTR_TXN_ID_VAL() {
-        return STR_TXN_ID_VAL;
-    }
-    
     public DBObject toDBObject () {
         DBObject object = new BasicDBObject();
         
-        object.put( "_id", Long.parseLong(STR_LOC_NBR_VAL+STR_UPC_VAL) );
-        object.put( STR_NBR, STR_NBR_VAL );
-        object.put( STR_UPC, getSTR_UPC_VAL() );
-        object.put( STR_LOC_NBR, getSTR_LOC_NBR_VAL() );
-        object.put( STR_AVAIL_TO_SELL, getSTR_AVAIL_TO_SELL_VAL() );
-        object.put( STR_NOT_AVAIL_THLD_QTY, getSTR_NOT_AVAIL_THLD_QTY_VAL() );
-        object.put( STR_FIIS_ANS_CODE, getSTR_FIIS_ANS_CODE_VAL() );
-        object.put( STR_NOT_AVAIL_QTY_SITE, getSTR_NOT_AVAIL_QTY_SITE_VAL() );
-        object.put( STR_NOT_AVAIL_QTY_ESEND, getSTR_NOT_AVAIL_QTY_ESEND_VAL() );
-        object.put( STR_IN_ROUTE_CODE, getSTR_IN_ROUTE_CODE_VAL() );
-        object.put( STR_PHYS_ON_HAND, getSTR_PHYS_ON_HAND_VAL() );
-        object.put( STR_CEB_LAST_UPDATED_TS, getSTR_CEB_LAST_UPDATED_TS_VAL() );
-        object.put( STR_SPACE_UPDATED_TS, getSTR_SPACE_UPDATED_TS_VAL() );
-        object.put( STR_TXN_ID, getSTR_TXN_ID_VAL() );
+        object.put( "_id", Long.parseLong(LOC_NBR+UPC) );
+        object.put( NBR_FIELDNAME, NBR );
+        object.put( UPC_FIELDNAME, UPC );
+        object.put( LOC_NBR_FIELDNAME, LOC_NBR );
+        object.put( AVAIL_TO_SELL_FIELDNAME, AVAIL_TO_SELL );
+        object.put( NOT_AVAIL_THLD_QTY_FIELDNAME, NOT_AVAIL_THLD_QTY );
+        object.put( FIIS_ANS_CODE_FIELDNAME, FIIS_ANS_CODE );
+        object.put( NOT_AVAIL_QTY_SITE_FIELDNAME, NOT_AVAIL_QTY_SITE );
+        object.put( NOT_AVAIL_QTY_ESEND_FIELDNAME, NOT_AVAIL_QTY_ESEND );
+        object.put( IN_ROUTE_CODE_FIELDNAME, IN_ROUTE_CODE );
+        object.put( PHYS_ON_HAND_FIELDNAME, PHYS_ON_HAND );
+        object.put( CEB_LAST_UPDATED_TS_FIELDNAME, CEB_LAST_UPDATED_TS );
+        object.put( SPACE_UPDATED_TS_FIELDNAME, SPACE_UPDATED_TS );
+        object.put( TXN_ID_FIELDNAME, TXN_ID );
 
         return object;
     }

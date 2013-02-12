@@ -14,11 +14,10 @@ public class Pump<T> {
     private Sink<T> sink;
     private ArrayBlockingQueue <T> queue;
     
-    private Boolean intakeRunning = Boolean.FALSE;
-    private Boolean outputRunning = Boolean.FALSE;
+    private List<Output> outputs = new ArrayList<Output>();
+    private List<Intake> intakes = new ArrayList<Intake>();
     
-    private List<Thread> outputs = new ArrayList<Thread>();
-    private List<Thread> inputs = new ArrayList<Thread>();
+    private Boolean running = Boolean.FALSE;
     
     public interface Source<T> {
         public T produce();
@@ -28,7 +27,7 @@ public class Pump<T> {
         public void consume(T object);
     }
 
-    class Intake implements Runnable {
+    class Intake extends Thread {
         private final BlockingQueue<T> queue;
         private Source<T> source;
 
@@ -39,20 +38,22 @@ public class Pump<T> {
 
         public void run() {
             try {
-                while (isIntakeRunning()) {
+                while ( true ) {
+                    synchronized ( Pump.this ) { 
+                        if ( !running )
+                            throw new InterruptedException();
+                    }
                     T item = source.produce();
                     if(item != null )
                         queue.put(item);
-                    else
-                        throw new InterruptedException("source produced null item");
                 }
             } catch (InterruptedException ex) {
-                System.out.println("Output thread interrupted. "+ ex.getMessage() );
-            }        
+                Thread.currentThread().interrupt();
+            } 
         }
     }
 
-    class Output implements Runnable {
+    class Output extends Thread {
         private final BlockingQueue<T> queue;
         private Sink<T> sink;
 
@@ -63,90 +64,48 @@ public class Pump<T> {
 
         public void run() {
             try {
-                while (isOutputRunning()) {
-                    try {
-                    sink.consume(queue.take());
-                    } catch ( Exception e) {
-                        throw new InterruptedException();
+                while ( true ) {
+                    synchronized ( running ) {
+                        if( !running && queue.size() == 0 )
+                            break;
                     }
+
+                    sink.consume(queue.take());
                 }
             } catch (InterruptedException ex) {
-                System.out.println("Input thread interrupted. "+ ex.getMessage() );
+                Thread.currentThread().interrupt();
             }
         }
     }
-    
-    public  boolean isIntakeRunning() { 
-        synchronized ( intakeRunning ) {
-            return intakeRunning.booleanValue();
+
+    public void stop () {
+        synchronized ( running ) {
+            running = Boolean.FALSE;
+            for ( Intake intake : intakes )
+                intake.interrupt();
         }
     }
     
-    public  boolean isOutputRunning() { 
-        synchronized ( outputRunning ) {
-            return outputRunning.booleanValue();
-        }
-    }
-    
-    public void stopIntake() {
-        synchronized ( intakeRunning ) {
-            intakeRunning = Boolean.FALSE;
-        }
-        for (int i = 0; i < inputs.size(); i++)
-            try {
-                Thread input = inputs.get(i);
-                if( input.isAlive() ) input.interrupt();
-                (input).join(1000000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+    public void start() {
+        synchronized ( running ) {
+            running = Boolean.TRUE;
+            
+            for( int i = 0; i < outputThreads; i++) {
+                Output output = new Output( queue, sink );
+                outputs.add(output);
+                output.start();
             }
-    }
-    
-    public void startIntake() {
-        
-        synchronized ( intakeRunning ) {
-            intakeRunning = Boolean.TRUE;
+            
+            for( int i = 0; i < inputThreads; i++) {
+                Intake intake = new Intake( queue, source );
+                intake.start();
+                intakes.add(intake);
+             }
         }
-        
-        for( int i = 0; i < inputThreads; i++) {
-           Thread thread = new Thread( new Intake( queue, source ) );
-           thread.start();
-           inputs.add(thread);
-        }
-    }
-    
-    public void stopOutput () {
-        synchronized ( outputRunning ) {
-            outputRunning = Boolean.TRUE;
-        }
-        
-        for (int i = 0; i < outputs.size(); i++)
-            try {
-                Thread output = outputs.get(i);
-                if( output.isDaemon() ) output.interrupt();
-                (output).join(1000);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-    }
-    
-    public void startOutput() {
-        
-        synchronized ( outputRunning ) {
-            outputRunning = Boolean.TRUE;
-        }
-        
-        for( int i = 0; i < outputThreads; i++) {
-            Thread thread = new Thread( new Output( queue, sink ) );
-            thread.start();
-            outputs.add(thread);
-         }
     }
     
     public int getQueueSize() {
-        return ( queue.size() - queue.remainingCapacity() );
+        return queue.size() ;
     }
 
     public Pump( Source<T> source, Sink<T> sink, int numIntakeThreads, int numOuttakeThreads, int queueSize ) {

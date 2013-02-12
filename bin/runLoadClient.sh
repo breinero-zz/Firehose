@@ -20,7 +20,7 @@ NAMESPACE="-n loadtest.items"
 BUFFER="-b 25000"
 
 if [ $1 == "compile" ] ; then 
-	javac $CLASSPATH $BINDIR $SRCDIR src/com/xgen/macys/*.java ; 
+	javac $CLASSPATH $BINDIR $SRCDIR src/com/xgen/load/*.java ; 
 elif [ $1 == "help" ] ; then 
 	 $JAVA $CLASSPATH $MAINCLASS -h
 else
