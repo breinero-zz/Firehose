@@ -30,9 +30,9 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
     private Integer readerThreads = 4;
     private Integer writerThreads = 4;
     private String[] locations = null;
-    private WriteConcern durability = WriteConcern.NORMAL;
+    private WriteConcern durability = WriteConcern.ACKNOWLEDGED;
     private int bufferSize = Integer.valueOf(50000);
-    private String namespace = "macystest.strSpace";
+    private String namespace = "loadtest.items";
     
     private BufferedReader br = null;
 
@@ -136,32 +136,11 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
                 synchronized ( linesRead ) {  linesRead++; }
                 
                 String[] fields = currentLine.split(",");
-                Item item = new Item(
-                        Integer.valueOf(fields[0]).intValue(),
-                        Integer.valueOf(fields[1]).intValue(), 
-                        fields[2], 
-                        Integer.valueOf(fields[3]).intValue(),
-                        Integer.valueOf(fields[4]).intValue(), 
-                        fields[5], 
-                        Integer.valueOf(fields[6]).intValue(),
-                        Integer.valueOf(fields[7]).intValue(), 
-                        Integer.valueOf(fields[8]).intValue(), 
-                        Integer.valueOf(fields[9]).intValue(),
-                        Long.valueOf(fields[10]).longValue(), 
-                        Long.valueOf(fields[11]).longValue(), 
-                        Integer.valueOf(fields[12]).intValue()
-                        );
+                Item item = new Item(Integer.valueOf(fields[0]).intValue(),
+                        fields[1], Integer.valueOf(fields[2]).intValue());
 
-                // load specific locations is specified otherwise load all
-                if( locations != null && locations.length > 0 ) {
-                    for ( String location : locations ) {
-                        if ( Integer.valueOf(location ) == item.getNBR() )
-                            return item.toDBObject();
-                    }
-                } 
-                else {
-                    return item.toDBObject();
-                }
+                return item.toDBObject();
+   
             }
         } catch (IOException e) {
             e.printStackTrace();
