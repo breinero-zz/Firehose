@@ -39,7 +39,7 @@ public class Pump<T> {
         public void run() {
             try {
                 while ( true ) {
-                    synchronized ( Pump.this ) { 
+                    synchronized ( running ) { 
                         if ( !running )
                             throw new InterruptedException();
                     }

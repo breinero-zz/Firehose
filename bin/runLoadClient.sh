@@ -11,18 +11,18 @@ SRCDIR="-sourcepath src/"
 # MongoDB specific variables
 
 DURABILITY="-d acknowledged"
-READERS="-r 4"
-WRITERS="-w 8"
-FILENAME="-f /Users/breinero/Desktop/prepped1000.csv"
-LOCATIONS=""
-MONGOS="-m localhost:27017"
-NAMESPACE="-n loadtest.items"
-BUFFER="-b 25000"
+READERS="-r 2"
+WRITERS="-w 4"
+FILENAME="-f /Users/breinero/Desktop/prepped.csv"
+#LOCATIONS=""
+MONGOS="-m localhost:40000"
+#NAMESPACE="-n.items"
+#BUFFER="-b 25000"
 
 if [ $1 == "compile" ] ; then 
 	javac $CLASSPATH $BINDIR $SRCDIR src/com/xgen/load/*.java ; 
 elif [ $1 == "help" ] ; then 
 	 $JAVA $CLASSPATH $MAINCLASS -h
 else
-	$JAVA $JAVAOPTS $CLASSPATH $MAINCLASS $MONGOS $FILENAME $READERS $WRITERS $LOCATIONS
+	$JAVA $JAVAOPTS $CLASSPATH $MAINCLASS $MONGOS $FILENAME $READERS $WRITERS 
 fi
