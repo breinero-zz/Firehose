@@ -1,9 +1,10 @@
-package com.xgen.load;
+package com.bryanreinero.load;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Pump<T> {
 
@@ -17,7 +18,7 @@ public class Pump<T> {
     private List<Output> outputs = new ArrayList<Output>();
     private List<Intake> intakes = new ArrayList<Intake>();
     
-    private Boolean running = Boolean.FALSE;
+    private AtomicBoolean running = new AtomicBoolean(false);
     
     public interface Source<T> {
         public T produce();
@@ -39,10 +40,9 @@ public class Pump<T> {
         public void run() {
             try {
                 while ( true ) {
-                    synchronized ( running ) { 
-                        if ( !running )
+                    if ( ! running.get() )
                             throw new InterruptedException();
-                    }
+          
                     T item = source.produce();
                     if(item != null )
                         queue.put(item);
@@ -66,11 +66,11 @@ public class Pump<T> {
             try {
                 while ( true ) {
                     synchronized ( running ) {
-                        if( !running && queue.size() == 0 )
+                        if( !running.get() && queue.size() == 0 )
                             break;
-                    }
 
-                    sink.consume(queue.take());
+                        sink.consume(queue.take());
+                    }
                 }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
@@ -80,7 +80,7 @@ public class Pump<T> {
 
     public void stop () {
         synchronized ( running ) {
-            running = Boolean.FALSE;
+            running.set(false);
             for ( Intake intake : intakes )
                 intake.interrupt();
         }
@@ -88,7 +88,7 @@ public class Pump<T> {
     
     public void start() {
         synchronized ( running ) {
-            running = Boolean.TRUE;
+            running.set(true);
             
             for( int i = 0; i < outputThreads; i++) {
                 Output output = new Output( queue, sink );

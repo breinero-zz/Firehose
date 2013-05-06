@@ -1,4 +1,4 @@
-package com.xgen.load;
+package com.bryanreinero.load;
 
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;

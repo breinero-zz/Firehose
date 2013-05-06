@@ -1,4 +1,4 @@
-package com.xgen.load;
+package com.bryanreinero.load;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,6 +10,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
+import com.bryanreinero.load.Pump.Sink;
+import com.bryanreinero.load.Pump.Source;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -19,8 +21,6 @@ import com.mongodb.MongoException;
 import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
-import com.xgen.load.Pump.Sink;
-import com.xgen.load.Pump.Source;
 
 public class LoadClient implements Source<DBObject>, Sink<DBObject> {
 
