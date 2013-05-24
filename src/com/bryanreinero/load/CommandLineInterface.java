@@ -81,7 +81,7 @@ public class CommandLineInterface {
         
         namespaceOp = OptionBuilder.withArgName( "namespace" )
                 .withType(String.class)
-                .withDescription( "target namespace. Default = macystest.strSpace")
+                .withDescription( "target namespace. Default = loadtest.items")
                 .hasArg()
                 .create( "n" );
         
