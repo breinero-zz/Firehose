@@ -1,0 +1,39 @@
+<project name="Inserter" default="compile" basedir="." >
+
+    <property name="src.dir"     value="src/"/>
+    <property name="build.dir"   value="build"/>
+    <property name="classes.dir" value="${build.dir}/classes"/>
+    <property name="jar.dir"     value="${build.dir}/jar"/>
+    <property name="lib.dir"     value="lib"/>
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar" />
+    </path>
+
+    <target name="clean">
+        <delete dir="${build.dir}"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${src.dir}" destdir="${classes.dir}" classpathref="classpath" debug="true"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.dir}/inserter.jar" basedir="${classes.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="com.bryanreinero.load.LoadClient"/>
+            </manifest>
+        </jar>
+    </target>
+    
+    <target name="run">
+        <java jar="build/jar/inserter.jar" fork="true">
+            <classpath>
+                <pathelement location="${lib.dir}/mongo.jar"/>
+            </classpath>
+        </java>
+    </target>
+    
+</project>
