@@ -27,10 +27,10 @@ Parameters
 Options
 ~~~~~~~
 -b number   Queue size, the maximum number of documents queued for insertion to MongoDB. Defaults to 50000 items
--d [] The durability level used when writing to MongoDB. write concern.Default: NORMAL
--h help print help info
--m delimited list of mongos'es. Defaults to localhost:27017
--r numthreads   number of threads used to read from input file. Defaults to 4
+-d []	The durability level used when writing to MongoDB. write concern.Default: NORMAL
+-h	help print help info
+-m	delimited list of mongos'es. Defaults to localhost:27017
+-r	numthreads   number of threads used to read from input file. Defaults to 4
 -w number   number of threads used to write into MongoDB. Defaults to 4
 
 
