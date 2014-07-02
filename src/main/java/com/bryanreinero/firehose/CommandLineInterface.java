@@ -1,4 +1,4 @@
-package com.bryanreinero.load;
+package com.bryanreinero.firehose;
 
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
@@ -14,22 +14,22 @@ import org.apache.commons.cli.ParseException;
 
 public class CommandLineInterface {
     
-    private Option helpOp;
-    private Option filenameOp;
-    private Option mongosOp;
-    private Option readerThreadsOp;
-    private Option writerThreadsOp;
-    private Option bufferSizeOp;
-    private Option locationsOp;
-    private Option durabilityOp;
-    private Option namespaceOp;
+    private final Option helpOp;
+    private final Option filenameOp;
+    private final Option mongosOp;
+    private final Option readerThreadsOp;
+    private final Option writerThreadsOp;
+    private final Option bufferSizeOp;
+    private final Option durabilityOp;
+    private final Option namespaceOp;
     
     private Options options = new Options();
     
     private HelpFormatter formatter = new HelpFormatter();
 
+    // TODO: Add option for column parsing
     public CommandLineInterface() {
-        
+        // Apache CLI Parsing stage of command line processing
         helpOp = OptionBuilder.withArgName( "help" )
                 .withType(String.class)
                 .withDescription( "print help info" )
@@ -47,7 +47,7 @@ public class CommandLineInterface {
                 .withDescription( "filename to import. REQUIRED" )
                 .isRequired(true)
                 .hasArg()
-                .create( "f");;
+                .create( "f");
         
         readerThreadsOp = OptionBuilder.withArgName( "readers" )
         .withType(Integer.class)
@@ -66,13 +66,6 @@ public class CommandLineInterface {
                 .hasArg()
                 .create( "b");
         
-        locationsOp = OptionBuilder.withArgName( "location" )
-                .withType(String[].class)
-                .withValueSeparator(',')
-                .hasArgs()
-                .withDescription( "',' delimited list of store locations to be handled by this client")
-                .create( "l" );
-        
         durabilityOp = OptionBuilder.withArgName( "durability" )
                 .withType(String.class)
                 .withDescription( "write concern. Default = NORMAL")
@@ -81,45 +74,57 @@ public class CommandLineInterface {
         
         namespaceOp = OptionBuilder.withArgName( "namespace" )
                 .withType(String.class)
-                .withDescription( "target namespace. Default = loadtest.items")
+                .withDescription( "target namespace. REQUIRED")
+                .isRequired(true)
                 .hasArg()
                 .create( "n" );
         
         options.addOption(helpOp);
+        
         //options.addOption(filenameOp);
         
         options.addOption("f", true, "filename to import. REQUIRED" );
+
+        options.addOption( 
+            OptionBuilder.withArgName( "columns" )
+                .withType(String[].class)
+                .withValueSeparator(',')
+                .hasArgs()
+                .isRequired()
+                .withDescription( "',' delimited list of columns [name:type]" )
+                .create( "cols" )
+        );
         
         options.addOption(mongosOp);
         options.addOption(readerThreadsOp);
         options.addOption(writerThreadsOp);
         options.addOption(bufferSizeOp);
-        options.addOption(locationsOp);
         options.addOption(durabilityOp);
         options.addOption(namespaceOp);
         
-        HelpFormatter formatter = new HelpFormatter();
     }
         
     public void printHelp() {
         formatter.printHelp( "LoadClient", options );
     }
     
-    public LoadClient parse ( String[] args ) throws ParseException, UnknownHostException, FileNotFoundException {
+    public Firehose parse ( String[] args ) 
+        throws ParseException, UnknownHostException, FileNotFoundException 
+    {
         CommandLineParser parser = new GnuParser();
 
-        LoadClient client = null;
-        CommandLine line = null;
+        Firehose client = null;
         
-        try {
-            line = parser.parse( options, args );
+        try 
+        {
+            CommandLine line = parser.parse( options, args );
             
             if ( line.hasOption( "h" ) ) {
                 formatter.printHelp( "LoadClient", options );
-                return null;
+                return client;
             }
             
-            client = new LoadClient( line.getOptionValue( "f" ) );
+            client = new Firehose( line.getOptionValue( "f" ) );
             
             if ( line.hasOption( "b" ) ) 
                 client.setBufferSize( new Integer( line.getOptionValue("b") ));
@@ -141,6 +146,8 @@ public class CommandLineInterface {
             
             if ( line.hasOption( "w" ) )
                 client.setWriterThreads( new Integer( line.getOptionValue("w")));
+            
+            client.setColumns(line.getOptionValue("cols").split(","));
             
         } catch (ParseException e) {
             System.out.println(e.getMessage());

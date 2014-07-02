@@ -1,17 +1,18 @@
-package com.bryanreinero.load;
+package com.bryanreinero.firehose;
 
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
-
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.UnknownHostException;
 
-import com.bryanreinero.load.Pump.Sink;
-import com.bryanreinero.load.Pump.Source;
+import com.bryanreinero.firehose.Pump.Sink;
+import com.bryanreinero.firehose.Pump.Source;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -22,7 +23,7 @@ import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 
-public class LoadClient implements Source<DBObject>, Sink<DBObject> {
+public class Firehose implements Source<DBObject>, Sink<DBObject> {
 
     private MongoClient mongo;
 
@@ -42,10 +43,12 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
     private Pump<DBObject> pump = null;
     private DBCollection items = null;
     
+    private Converter converter; 
+    
     // create a List of all the nodes in this replica set
     List<ServerAddress> addrs = new ArrayList<ServerAddress>();
 
-    public LoadClient ( String filename ) throws UnknownHostException, FileNotFoundException {
+    public Firehose ( String filename ) throws UnknownHostException, FileNotFoundException {
 
         if(filename == null || filename.length() == 0 )
             throw new IllegalArgumentException("No filename");
@@ -134,12 +137,7 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
             }
             else {
                 synchronized ( linesRead ) {  linesRead++; }
-                
-                String[] fields = currentLine.split(",");
-                Item item = new Item(Integer.valueOf(fields[0]).intValue(),
-                        fields[1], Integer.valueOf(fields[2]).intValue());
-
-                return item.toDBObject();
+                return converter.convert( currentLine );
    
             }
         } catch (IOException e) {
@@ -156,7 +154,7 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
 
     public static void main ( String[] args ) {
 
-        LoadClient client = null;
+        Firehose client = null;
         CommandLineInterface cli = new CommandLineInterface();
         
         try {
@@ -251,5 +249,14 @@ public class LoadClient implements Source<DBObject>, Sink<DBObject> {
 
     public void setNamespace(String namespace) {
         this.namespace = namespace;
+    }
+    
+    public void setColumns( String[] columns  ) {
+    	for( int i = 0; i < columns.length; i++ ){
+    		Map <String, String> fields = new HashMap<String, String>();
+    		String[] pair = columns[i].split(":");
+    		fields.put( pair[0], pair[1] );
+    		converter = new Converter( fields, "," ); 
+    	}
     }
 }
