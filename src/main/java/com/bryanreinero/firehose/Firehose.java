@@ -109,6 +109,10 @@ public class Firehose implements Executor {
 		samples.setTimeToLive( ttl );
 	}
 	
+	public void setConsoleMode( boolean bool ) {
+		printer.setConsole(bool );
+	}
+	
 	public void start() {
 		printer.start();
 		workers.start( numThreads );

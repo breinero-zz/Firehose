@@ -101,9 +101,8 @@ public class CommandLineInterface {
 				.create("i"));
 		
 		options.addOption(OptionBuilder
-				.withDescription(
-						"print output in console mode, when possible")
-				.create("c"));
+				.withDescription("print out in CR-delimited lines. Default is console mode (pretty printing), when possible")
+				.create("cr"));
 	}
 
 	public void printHelp() {
@@ -163,6 +162,9 @@ public class CommandLineInterface {
 
 			if (line.hasOption("i"))
 				client.setTTL(Long.parseLong(line.getOptionValue("i")));
+			
+			if (line.hasOption("cr"))
+				client.setConsoleMode( false );
 
 		} catch (ParseException e) {
 			System.out.println( e.getMessage() );
