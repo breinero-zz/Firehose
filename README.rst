@@ -2,7 +2,7 @@
 Firehose
 ========
 
-:Description: A tool import text files such as CSV's and TSV's into MongoDB.
+:Description: A tool import for text files such as CSV's and TSV's into MongoDB.
 :Author: Bryan Reinero <breinero@gmail.com>
 
 Dependencies

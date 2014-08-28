@@ -86,7 +86,7 @@ public class SampleSet {
 			else
 				first = false;
 			Aggregate agg = aggregate.getValue();
-			buf.append("{ name: "+aggregate.getKey()+", "+
+			buf.append("{ name: \""+aggregate.getKey()+"\", "+
 				"count: "+agg.getCount()+", "
 				+"average: "+agg.average()+" }"
 			);

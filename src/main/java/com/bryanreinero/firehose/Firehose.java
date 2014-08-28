@@ -45,8 +45,8 @@ public class Firehose implements Executor {
             readLine.mark();
             
             if ( currentLine == null ) {
-            	total.mark();
-            	System.out.println("Reached end of file. Stopping intake");
+            	//total.mark();
+            	//System.out.println("Reached end of file. Stopping intake");
                 stop();
                 
             }
