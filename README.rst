@@ -18,20 +18,21 @@ Additional dependencies are:
 Usage
 -----
 
-Parameters
-~~~~~~~~~~
--f file file name to import
--n database.collection  The target namespace in MongoDB to write to
-
-
-Options
-~~~~~~~
--b number   Queue size, the maximum number of documents queued for insertion to MongoDB. Defaults to 50000 items
--d []	The durability level used when writing to MongoDB. write concern.Default: NORMAL
--h	help print help info
--m	delimited list of mongos'es. Defaults to localhost:27017
--r	numthreads   number of threads used to read from input file. Defaults to 4
--w number   number of threads used to write into MongoDB. Defaults to 4
+ -c <console>        print output in console mode, when possible
+ -cols <columns>     ',' delimited list of columns [name:type]
+ -delim              the value separator used to parse columns. Default
+                     ','
+ -dur <durability>   write concern. Default = NORMAL
+ -f <file>           filename to import. REQUIRED
+ -h                  print help info
+ -i <interval>       sample interval over which to report stats,
+                     (milleseconds)
+ -m <mongos>         ',' delimited list of mongos'es. Default
+                     localhost:27017,
+ -n <namespace>      target namespace. REQUIRED
+ -p <report>         print progress every 'n' seconds
+ -t <threads>        number of threads. Default 1.
+ -v                  Enable verbose output
 
 
 License

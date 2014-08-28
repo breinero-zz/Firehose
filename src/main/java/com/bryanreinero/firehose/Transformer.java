@@ -13,6 +13,7 @@ public abstract class Transformer <V extends Object> {
 
     private Transformer(){};
     
+    // TODO: Make support all BSON types 
     public static final String TYPE_OBJECT_ID = "objectid";
     public static final String TYPE_STRING = "string";
     public static final String TYPE_INT = "int";
@@ -31,6 +32,11 @@ public abstract class Transformer <V extends Object> {
                 public ObjectId transform( String value ) {
                     return new ObjectId( value );
                 }
+                
+                @Override
+                public String toString() {
+                	return TYPE_OBJECT_ID;
+                }
             }
         );
         
@@ -39,6 +45,11 @@ public abstract class Transformer <V extends Object> {
                 @Override
                 public String transform( String value ) {
                     return value ;
+                }
+                
+                @Override
+                public String toString() {
+                	return TYPE_STRING;
                 }
             }
         );
@@ -49,6 +60,11 @@ public abstract class Transformer <V extends Object> {
                 public Integer transform( String value ) {
                     return new Integer( value );
                 }
+
+                @Override
+                public String toString() {
+                	return TYPE_INT;
+                }
             }
         );
         
@@ -57,6 +73,11 @@ public abstract class Transformer <V extends Object> {
                 @Override
                 public Float transform( String value ) {
                     return new Float( value );
+                }
+                
+                @Override
+                public String toString() {
+                	return TYPE_FLOAT;
                 }
             }
         );
@@ -67,6 +88,11 @@ public abstract class Transformer <V extends Object> {
                 public Double transform( String value ) {
                     return new Double( value );
                 }
+                
+                @Override
+                public String toString() {
+                	return TYPE_DOUBLE;
+                }
             }
         );
         
@@ -75,6 +101,11 @@ public abstract class Transformer <V extends Object> {
                     @Override
                     public Double transform( String value ) {
                         return new Double( value );
+                    }
+                    
+                    @Override
+                    public String toString() {
+                    	return TYPE_SUBDOCUMENT;
                     }
                 }
             );

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Stack;
 
 import com.mongodb.DBObject;
@@ -64,5 +65,22 @@ public class Converter {
             document.put( fieldName, value );
         }
         return document;
+    }
+    
+    @Override
+    public String toString() {
+    	StringBuffer buf =  new StringBuffer( "{ fields: [");
+    	
+    	boolean first = true;
+    	
+    	for ( Entry entry : transforms ) {
+    		if( !first )
+    			buf.append(",");
+    		else
+    			first = false;
+    		buf.append(" { field: \""+entry.getKey()+"\", type: "+entry.getValue().toString()+" }" );
+    	}
+    	buf.append(" ] }");
+		return buf.toString();
     }
 }
