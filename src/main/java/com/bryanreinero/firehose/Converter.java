@@ -1,13 +1,13 @@
 package com.bryanreinero.firehose;
 
 import java.util.AbstractMap.SimpleEntry;
-import java.util.Deque;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Stack;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
@@ -16,7 +16,8 @@ public class Converter {
 	
 	private String delimiter;
 	
-	private static final CharSequence namspace_delimeter = ".";
+	private static final String fieldNameSeparator = "\\.";
+	private static final Pattern arrayElemPosition = Pattern.compile( "^\\$\\d+$" );
 
     private final List<SimpleEntry<String, Transformer>> transforms
         = new ArrayList<SimpleEntry<String, Transformer>>();
@@ -57,14 +58,50 @@ public class Converter {
                     );
 
         for( int i = 0; i < transforms.size(); i++ ) {
+        	
             SimpleEntry transformKV = transforms.get(i);
-            	
             String fieldName = ((String)transformKV.getKey());
             Object value = ((Transformer)transformKV.getValue()).transform( values[i] );
             
-            document.put( fieldName, value );
+            nest( document, fieldName.split( fieldNameSeparator ), 0, value );
         }
         return document;
+    }
+    
+    private void nest( Object object, String[] prefix, int i, Object value ) {
+    	String name = prefix[i];
+    	Matcher m;
+    	
+    	if ( i < prefix.length - 1  ) {
+
+    		// casting hell
+    		DBObject parent = (DBObject)object;
+    		Object obj = parent.get( name );
+    		
+    		if ( obj == null ) {
+    			// look ahead to see if this is an array
+    			m = arrayElemPosition.matcher( prefix[ i + 1 ] );
+    			if( m.matches() ) 
+    				obj = new ArrayList();
+
+    			else
+    				obj = new BasicDBObject();
+
+    			parent.put( name, obj );
+    		}
+    		
+    		nest( obj, prefix, ++i, value );
+    	} else {
+    		// check if this is an array element
+    		m = arrayElemPosition.matcher( name );
+    		if ( object instanceof ArrayList  && m.matches() ) {
+    			// value is an array element 
+    			((ArrayList)object).add(value);
+    		}
+    		else {
+    			((DBObject)object).put( name, value);
+    		}
+    	}
     }
     
     @Override
@@ -82,5 +119,19 @@ public class Converter {
     	}
     	buf.append(" ] }");
 		return buf.toString();
+    }
+    
+    public static void main( String[] args ) {
+
+    	Map<String, String> header = new LinkedHashMap<String, String>();
+    	
+    	header.put("root.a.$0", Transformer.TYPE_INT );
+    	header.put("root.a.$1", Transformer.TYPE_INT );
+    	header.put("root.user.name", Transformer.TYPE_STRING );
+    	header.put("root.user.address", Transformer.TYPE_STRING );
+    	header.put("root.user.id", Transformer.TYPE_INT );
+    	Converter c = new Converter(header, ",");
+    	DBObject obj =  c.convert("1,2,bryan,valhalla,5676") ;
+    	System.out.println( obj );
     }
 }

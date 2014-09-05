@@ -2,6 +2,8 @@ package com.bryanreinero.firehose;
 
 import java.util.Map;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.bson.types.ObjectId;
 
@@ -19,8 +21,6 @@ public abstract class Transformer <V extends Object> {
     public static final String TYPE_INT = "int";
     public static final String TYPE_FLOAT = "float";
     public static final String TYPE_DOUBLE = "double";
-    public static final String TYPE_SUBDOCUMENT = "subdocument";
-    public static final String TYPE_ARRAY = "array";
     public static final String TYPE_BINARY = "binary";
     
     static {
@@ -28,9 +28,19 @@ public abstract class Transformer <V extends Object> {
 
         transformers.put( TYPE_OBJECT_ID,
             new Transformer <ObjectId> () {
+        	
+        		private final Pattern oIdRegex = Pattern.compile("^ObjectId\\(\"([^\"]+)\"\\)");
+        		
                 @Override
-                public ObjectId transform( String value ) {
-                    return new ObjectId( value );
+                public ObjectId transform( String input ) {
+                	String value;
+                	Matcher matcher = oIdRegex.matcher(input);
+                	if ( matcher.matches() ) 
+                		value = matcher.group(1);
+                	else
+                		value = input;
+                	
+                    return new ObjectId( value.replaceAll("\"", "") );
                 }
                 
                 @Override
@@ -95,20 +105,6 @@ public abstract class Transformer <V extends Object> {
                 }
             }
         );
-        
-        transformers.put( TYPE_SUBDOCUMENT ,
-                new Transformer <Double> () {
-                    @Override
-                    public Double transform( String value ) {
-                        return new Double( value );
-                    }
-                    
-                    @Override
-                    public String toString() {
-                    	return TYPE_SUBDOCUMENT;
-                    }
-                }
-            );
     }
 
     public static Transformer getTransformer( String type ) {
@@ -116,5 +112,18 @@ public abstract class Transformer <V extends Object> {
             throw new IllegalArgumentException( "Unsupported type: "+type);
 
         return transformers.get( type );
+    }
+    
+    public static void main( String[] args ) {
+    	String objectStr = "ObjectId(\"53ffbf464e8adce448d620ac\")";
+    	
+    	Pattern oIdRegex = Pattern.compile("^ObjectId\\(\"([^\"]+)\"\\)");
+    	Matcher matcher = oIdRegex.matcher(objectStr);
+    	if ( matcher.matches() ) 
+    		System.out.println( matcher.group(1) );
+    		
+    	Object obj = Transformer.getTransformer(TYPE_OBJECT_ID).transform( objectStr );
+    	
+    	System.out.println( obj );
     }
 }

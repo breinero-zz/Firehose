@@ -57,5 +57,5 @@ This software is not supported by MongoDB, Inc. under any of their commercial su
 To Do
 -----
 
-Accept piped input from stdin
-Should create a FirehoseOptions class with an internal Builder class, rather than building the LoadClient in the CommandLineInterface
+Accept piped input from stdine
+
