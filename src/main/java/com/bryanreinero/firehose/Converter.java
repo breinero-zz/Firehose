@@ -125,13 +125,13 @@ public class Converter {
 
     	Map<String, String> header = new LinkedHashMap<String, String>();
     	
-    	header.put("root.a.$0", Transformer.TYPE_INT );
-    	header.put("root.a.$1", Transformer.TYPE_INT );
+    	header.put("root.scores.$0", Transformer.TYPE_INT );
+    	header.put("root.scores.$1", Transformer.TYPE_INT );
     	header.put("root.user.name", Transformer.TYPE_STRING );
     	header.put("root.user.address", Transformer.TYPE_STRING );
     	header.put("root.user.id", Transformer.TYPE_INT );
     	Converter c = new Converter(header, ",");
-    	DBObject obj =  c.convert("1,2,bryan,valhalla,5676") ;
+    	DBObject obj =  c.convert("98,42,bryan,Magrethea,5676") ;
     	System.out.println( obj );
     }
 }

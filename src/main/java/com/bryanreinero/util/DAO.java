@@ -15,8 +15,8 @@ public class DAO {
 
 	private final DBCollection collection;
 
-	public void insert ( DBObject object ) {
-		WriteResult result = collection.insert(object);
+	public WriteResult insert ( DBObject object ) {
+		return collection.insert(object);
 	}
 
 	public DAO ( DBCollection collection ) {
@@ -36,6 +36,77 @@ public class DAO {
 		buf.append(" }");
 		buf.append(" }");
 		return buf.toString();
+	}
+	
+	public void setW( String concern ) {
+		WriteConcern wc = collection.getWriteConcern();
+		
+		WriteConcern newguy = new WriteConcern( 
+				concern,
+				wc.getWtimeout(),
+				wc.getFsync(),
+				wc.getJ(),
+				wc.getContinueOnError()
+				);
+		
+		collection.setWriteConcern(newguy);
+	}
+	
+
+	public void setTimeOut( int timeout ) {
+		WriteConcern wc = collection.getWriteConcern();
+		
+		WriteConcern newguy = new WriteConcern( 
+				wc.getWString(),
+				timeout,
+				wc.getFsync(),
+				wc.getJ(),
+				wc.getContinueOnError()
+				);
+		
+		collection.setWriteConcern(newguy);
+	}
+	
+	public void setFSync( boolean s ) {
+		WriteConcern wc = collection.getWriteConcern();
+		
+		WriteConcern newguy = new WriteConcern( 
+				wc.getWString(),
+				wc.getWtimeout(),
+				s,
+				wc.getJ(),
+				wc.getContinueOnError()
+				);
+		
+		collection.setWriteConcern(newguy);
+	}
+	
+	public void setJournal( boolean j ) {
+		WriteConcern wc = collection.getWriteConcern();
+		
+		WriteConcern newguy = new WriteConcern( 
+				wc.getWString(),
+				wc.getWtimeout(),
+				wc.getFsync(),
+				j,
+				wc.getContinueOnError()
+				);
+		
+		collection.setWriteConcern(newguy);
+	}
+	
+	public void setContinueOnError( boolean cont ) {
+		WriteConcern wc = collection.getWriteConcern();
+		
+		WriteConcern newguy = new WriteConcern( 
+				wc.getWString(),
+				wc.getWtimeout(),
+				wc.getFsync(),
+				wc.getJ(),
+				cont
+				);
+		
+		collection.setWriteConcern(newguy);
 	}
 	
 	public static List<ServerAddress> getServerAddresses(String[] hosts) {

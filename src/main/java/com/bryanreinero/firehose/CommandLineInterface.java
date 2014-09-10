@@ -2,7 +2,6 @@ package com.bryanreinero.firehose;
 
 import java.io.FileNotFoundException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +103,7 @@ public class CommandLineInterface {
 				.withDescription("print out in CR-delimited lines. Default is console mode (pretty printing), when possible")
 				.create("cr"));
 	}
+	
 
 	public void printHelp() {
 		formatter.printHelp("Firehose", options);
@@ -165,7 +165,7 @@ public class CommandLineInterface {
 			
 			if (line.hasOption("cr"))
 				client.setConsoleMode( false );
-
+			
 		} catch (ParseException e) {
 			System.out.println( e.getMessage() );
 			printHelp();
