@@ -23,7 +23,7 @@ Additional dependencies are:
 Usage
 -----
 
- -c <console>        print output in console mode, when possible
+ -cr        print output in console mode, when possible
  -cols <columns>     ',' delimited list of columns [name:type]
  -delim              the value separator used to parse columns. Default
                      ','
@@ -129,6 +129,8 @@ This software is not supported by MongoDB, Inc. under any of their commercial su
 
 To Do
 -----
-
-Accept piped input from stdine
-
+- Accept piped input from stdine
+- Write Javadocs
+- Accept json input
+- Accept mongoexport formated csv's
+- fix README formatting
