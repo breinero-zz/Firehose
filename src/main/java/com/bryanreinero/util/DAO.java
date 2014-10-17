@@ -48,7 +48,6 @@ public class DAO {
 				wc.getJ(),
 				wc.getContinueOnError()
 				);
-		
 		collection.setWriteConcern(newguy);
 	}
 	
@@ -109,6 +108,20 @@ public class DAO {
 		collection.setWriteConcern(newguy);
 	}
 	
+	public void setConcern( String s ) {
+		WriteConcern wc = collection.getWriteConcern();
+		
+		WriteConcern newguy = new WriteConcern( 
+				s,
+				wc.getWtimeout(),
+				wc.getFsync(),
+				wc.getJ(),
+				wc.getContinueOnError()
+				);
+	
+		collection.setWriteConcern(newguy);
+	}
+	
 	public static List<ServerAddress> getServerAddresses(String[] hosts) {
 		List<ServerAddress> addresses = new ArrayList<ServerAddress>();
 
@@ -141,6 +154,21 @@ public class DAO {
 			e.printStackTrace();
 		}
 		
+	}
+
+	public void setDurability(String key, String s) {
+		if( key.compareTo("journal") == 0 )
+			this.setJournal( Boolean.parseBoolean(s));
+		else if ( key.compareTo("fsync") == 0 )
+			this.setFSync( Boolean.parseBoolean(s));
+		else if ( key.compareTo("continueOnErr") == 0 )
+			this.setContinueOnError( Boolean.parseBoolean(s));
+		else if ( key.compareTo("timeout") == 0 )
+			this.setTimeOut( Integer.parseInt(s));
+		else if ( key.compareTo("w") == 0 )
+			this.setW(s);
+		else if ( key.compareTo("concerns") == 0 )
+			this.setConcern(s);
 	}
 
 }

@@ -147,8 +147,9 @@ public class Firehose implements Executor {
     
     public static void main( String[] args ) {
     	Firehose hoser = new Firehose();
-    	CommandLineInterface cli = new CommandLineInterface(hoser);
+    	CommandLineInterface cli;
     	try {
+    		cli = new CommandLineInterface(hoser);
 			cli.parse(args);
 			hoser.start();
 		} catch ( ParseException e1 ) {
@@ -159,4 +160,12 @@ public class Firehose implements Executor {
 			System.exit(-1);
 		}
     }
+
+	public void setDurability(String[] values ) {
+		
+		for( String val : values ) {
+			String[] s = val.split(":");
+			dao.setDurability( s[0], s[1]);
+		}
+	}
 }
