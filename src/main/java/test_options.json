@@ -1,0 +1,12 @@
+{
+    "applicaiton": "TestClass",
+    "options": [
+        {
+            "op": "d",
+            "name": "durability",
+            "description": "',' delimited list of mongos'es. Default localhost:27017,",
+            "args": "multi",
+            "separator": ","
+        }
+    ]
+}

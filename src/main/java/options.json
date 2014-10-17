@@ -1,0 +1,91 @@
+{
+    "applicaiton": "Firehose",
+    "options": [
+        {
+            "op": "m",
+            "name": "mongos",
+            "description": "',' delimited list of mongos'es. Default localhost:27017,",
+            "args": "multi",
+            "separator": ","
+        },
+        {
+            "op": "f",
+            "name": "filepath",
+            "description":"filename to import",
+            "required": "true",
+            "args" : "1"
+        },
+        {
+            "op": "t",
+            "name": "threads",
+            "description": "number of worker threads. Default 1"
+        },
+        {
+            "op": "write concern",
+            "name": "w",
+            "description": "write concern. Default = NORMAL",
+            "args": 1,
+            "separator": ","
+        },
+        {
+            "op": "namespace",
+            "name": "ns",
+            "description": "target namespace <database.collection>. REQUIRED",
+            "required": "true",
+            "args": "1"
+        },
+        {
+            "op": "h",
+            "name": "headers",
+            "description": "',' delimited list of columns [name:type]",
+            "required": "true",
+            "args": "multi",
+            "separator": ","
+        },
+        {
+            "op": "d",
+            "name": "delimeter",
+            "description": "the value separator used to parse columns. Default ','",
+            "args": "1"
+        },
+        {
+            "op": "v",
+            "name": "verbose",
+            "description": "Enabel verbose output",
+            "args": "1"
+        },
+        {
+            "op": "p",
+            "name": "report",
+            "description": "print output every n seconds",
+            "args": "1"
+        },
+        {
+            "op": "i",
+            "name": "interval",
+            "description": "averate stats over an time interval of i milleseconds",
+            "args": "1"
+        },
+        {
+            "op": "o",
+            "name": "format",
+            "description": "print out in CR-delimited lines. Default is console mode pretty printing, when possible"
+        },
+        {
+            "op": "journal",
+            "name": "j",
+            "description": "enable write concern wait for journal commit"
+        },
+        {
+            "op": "fsync",
+            "name": "s",
+            "description": "enable write concern wait for page flush"
+        },
+        {
+            "op": "glem",
+            "name": "glem",
+            "description": "use a specific get last error mode",
+            args : "multi"
+        }
+    ]
+}
