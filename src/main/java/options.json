@@ -3,6 +3,7 @@
     "options": [
         {
             "op": "m",
+            "longOpt" : "mongos",
             "name": "mongos",
             "description": "',' delimited list of mongos'es. Default localhost:27017,",
             "args": "multi",
@@ -10,32 +11,37 @@
         },
         {
             "op": "f",
-            "name": "filepath",
-            "description":"filename to import",
-            "required": "true",
-            "args" : "1"
+            "longOpt" : "file",
+            "name": "file",
+            "description":"filename to import (full path)",
+            "required": true,
+            "args" : 1
         },
         {
             "op": "t",
+            "longOpt" : "threads",
             "name": "threads",
             "description": "number of worker threads. Default 1"
         },
         {
-            "op": "write concern",
-            "name": "w",
+            "op": "wc",
+            "longOpt" : "writeConcern",
+            "name": "concern",
             "description": "write concern. Default = NORMAL",
             "args": 1,
             "separator": ","
         },
         {
-            "op": "namespace",
-            "name": "ns",
+            "op": "ns",
+            "longOpt" : "namespace",
+            "name": "namespace",
             "description": "target namespace <database.collection>. REQUIRED",
-            "required": "true",
-            "args": "1"
+            "required": true,
+            "args": 1
         },
         {
             "op": "h",
+            "longOpt" : "headers",
             "name": "headers",
             "description": "',' delimited list of columns [name:type]",
             "required": "true",
@@ -44,48 +50,49 @@
         },
         {
             "op": "d",
+            "longOpt" : "delimiter",
             "name": "delimeter",
             "description": "the value separator used to parse columns. Default ','",
-            "args": "1"
+            "args": 1
         },
         {
             "op": "v",
+            "longOpt" : "verbose",
             "name": "verbose",
             "description": "Enabel verbose output",
             "args": "1"
         },
         {
-            "op": "p",
-            "name": "report",
+            "op": "pi",
+            "longOpt" : "printInterval",
+            "name": "interval",
             "description": "print output every n seconds",
             "args": "1"
         },
         {
-            "op": "i",
+            "op": "ri",
+            "longOpt" : "reporti=Interval",
             "name": "interval",
             "description": "averate stats over an time interval of i milleseconds",
             "args": "1"
         },
         {
-            "op": "o",
+            "op": "cr",
+            "longOpt" : "noPretty",
             "name": "format",
             "description": "print out in CR-delimited lines. Default is console mode pretty printing, when possible"
         },
         {
-            "op": "journal",
+            "op": "j",
+            "longOpt" : "journal",
             "name": "j",
             "description": "enable write concern wait for journal commit"
         },
         {
-            "op": "fsync",
-            "name": "s",
+            "op": "fs",
+            "longOpt" : "fsync",
+            "name": "sync",
             "description": "enable write concern wait for page flush"
-        },
-        {
-            "op": "glem",
-            "name": "glem",
-            "description": "use a specific get last error mode",
-            args : "multi"
         }
     ]
 }

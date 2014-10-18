@@ -89,7 +89,7 @@ public class CommandLineInterface {
 				mongo = new MongoClient();
 			}
 
-			String val = line.getOptionValue("namespace");
+			String val = line.getOptionValue("ns");
 			String[] ns = val.split("\\.");
 			DBCollection collection = mongo.getDB(ns[0]).getCollection(ns[1]);
 			client.setDao(new DAO(collection));
@@ -101,7 +101,7 @@ public class CommandLineInterface {
 							)
 						);
 
-			client.setInput( line.getOptionValue("filepath") );
+			client.setInput( line.getOptionValue("file") );
 
 			if (line.hasOption("report"))
 				client.setPrinter(new Printer(Integer.parseInt(line

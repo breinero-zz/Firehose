@@ -5,12 +5,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.cli.Option;
-import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 
 import com.mongodb.DBObject;
@@ -19,24 +16,23 @@ import com.mongodb.util.JSON;
 public class OptionFactory {
 
 	private interface Setter {
-		public void set(OptionBuilder op, Object value);
+		public void set(Option op, Object value);
 	}
 
 	private static enum Setters implements Setter {
-		op {
+		longOpt {
 
 			@Override 
-			public String toString() { return "op";}
+			public String toString() { return "longOpt";}
 			
 			@Override
-			public void set(OptionBuilder op, Object value) {
-				
+			public void set(Option op, Object value) {
+			
+		
 				if ( !( value instanceof String ))
-					throw new IllegalArgumentException( name+" can only be of type String");
+					throw new IllegalArgumentException( op+" can only be of type String");
 				
-				if (op == null)
-					op = OptionBuilder.withArgName(value.toString());
-				op.withArgName(value.toString());
+				op.setLongOpt(value.toString());
 			}
 
 		},
@@ -46,12 +42,12 @@ public class OptionFactory {
 			public String toString() { return "name";}
 			
 			@Override
-			public void set(OptionBuilder op, Object value) {
+			public void set(Option op, Object value) {
 
 				if ( !( value instanceof String ))
 					throw new IllegalArgumentException( name+" can only be of type String");
 				
-				op.withLongOpt(value.toString());
+				op.setArgName(value.toString());
 			}
 		},
 
@@ -62,13 +58,13 @@ public class OptionFactory {
 			}
 
 			@Override
-			public void set(OptionBuilder op, Object value) {
+			public void set(Option op, Object value) {
 
 				Integer numArgs = null;
 				try {
 					if (value instanceof String) {
 						if (((String) value).matches("multi"))
-							op.hasArgs();
+							op.setArgs( Option.UNLIMITED_VALUES );
 						else
 							numArgs = Integer.parseInt((String) value);
 						return;
@@ -77,8 +73,8 @@ public class OptionFactory {
 					if (value instanceof Integer)
 						numArgs = (Integer) value;
 
-					if (numArgs > 1)
-						op.hasArgs(numArgs);
+					if (numArgs >= 1)
+						op.setArgs(numArgs);
 
 					else
 						op.hasArg();
@@ -95,15 +91,15 @@ public class OptionFactory {
 			public String toString() { return "separator";}
 			
 			@Override
-			public void set(OptionBuilder op, Object value) {
+			public void set(Option op, Object value) {
 				if(value instanceof Character )
-					op.withValueSeparator( (Character)value );
+					op.setValueSeparator( (Character)value );
 				else
 					if( value instanceof String ) {
 						if( ((String)value).length() > 1  )
 							throw new IllegalArgumentException(
 									"separator must be 1 character");
-						op.withValueSeparator( ((String)value).charAt(0) );
+						op.setValueSeparator( ((String)value).charAt(0) );
 					}
 			}
 		},
@@ -113,14 +109,14 @@ public class OptionFactory {
 			public String toString() { return "required";}
 			
 			@Override
-			public void set(OptionBuilder op, Object value) {
-				Boolean v = null;
+			public void set(Option op, Object value) {
+				Boolean required = null;
 				if( value instanceof Boolean )
-					v = (Boolean)value;
+					required = (Boolean)value;
 				else
-					v = Boolean.parseBoolean((String)value);
+					required = Boolean.parseBoolean((String)value);
 				
-				op.isRequired(v);
+				op.setRequired(required);
 			}
 		},
 
@@ -129,14 +125,25 @@ public class OptionFactory {
 			public String toString() { return "description";}
 			
 			@Override
-			public void set(OptionBuilder op, Object value) {
+			public void set(Option op, Object value) {
 				if( value instanceof String ) 
-					op.withDescription((String)value);
+					op.setDescription((String)value);
 				
 				else
 					throw new IllegalArgumentException( name+" can only be of type String" );
 			}
 		};
+		
+		public static Setter get( String key ) {
+			
+			List<Setters> sl = Arrays.asList(Setters.values());
+			
+			for( Setters s : sl )
+				if( s.toString().compareTo(key) == 0 )
+					return s;
+			
+			return null;
+		}
 
 	}
 
@@ -144,15 +151,19 @@ public class OptionFactory {
 		 Options options = new Options();
 		
 		DBObject config = (DBObject) JSON.parse(json);
-		DBObject ops = ((DBObject)config.get("options"));
+		List<DBObject> ops = (List<DBObject>)config.get("options");
 		
-		Iterator<Map<String, String>> it = ops.toMap().values().iterator();
-		
-		while(  it.hasNext() )  {
-			Map o = it.next();
-			options.addOption( 
-					OptionFactory.getOption( o )
-				);
+		for( DBObject opt : ops ) {
+			if( opt.containsField("op") == false )
+				throw new IllegalArgumentException("opt field required");
+			
+			Option option = new Option( (String)opt.get("op"), null);
+			opt.removeField("op");
+			
+			for( String name : opt.keySet() )
+				Setters.get( name ).set(option, opt.get(name) );
+				
+			options.addOption( option);
 		}
 		return options;
 	}
@@ -171,16 +182,8 @@ public class OptionFactory {
 		return sb.toString();
 	}
 
-	public static Option getOption(Map<String, Object> params) {
-		OptionBuilder builder = OptionBuilder.withArgName( "null" );
-		
-		List<Setters> sl = Arrays.asList(Setters.values());
-		
-		for( String key : params.keySet() )
-			for( Setters s : sl )
-				if( s.toString().compareTo(key) == 0 )
-					s.set(builder, params.get(key));
-
-		return builder.create();
+	public static void main ( String[] args ) {
+		String json = "{ ops: [] } ";
+		OptionFactory.parseJSON(json);
 	}
 }
