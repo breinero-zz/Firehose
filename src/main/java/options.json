@@ -21,23 +21,25 @@
             "op": "t",
             "longOpt" : "threads",
             "name": "threads",
-            "description": "number of worker threads. Default 1"
+            "description": "number of worker threads. Default 1",
+            args: 1
         },
         {
             "op": "wc",
             "longOpt" : "writeConcern",
             "name": "concern",
             "description": "write concern. Default = NORMAL",
-            "args": 1,
-            "separator": ","
+            "args": 1
         },
         {
             "op": "ns",
             "longOpt" : "namespace",
             "name": "namespace",
-            "description": "target namespace <database.collection>. REQUIRED",
+            "description": "target database and collection this work will use",
             "required": true,
-            "args": 1
+            "args": 2,
+            separator: "."
+            
         },
         {
             "op": "h",

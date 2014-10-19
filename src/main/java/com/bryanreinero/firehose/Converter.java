@@ -14,15 +14,21 @@ import com.mongodb.BasicDBObject;
 
 public class Converter {
 	
-	private String delimiter;
+	private String delimiter = ",";
 	
 	private static final String fieldNameSeparator = "\\.";
 	private static final Pattern arrayElemPosition = Pattern.compile( "^\\$\\d+$" );
 
     private final List<SimpleEntry<String, Transformer>> transforms
         = new ArrayList<SimpleEntry<String, Transformer>>();
+    
+    public Converter(){};
 
-    public Converter ( Map<String, String> header, String delimiter ) {
+    public void setDelimiter(String delimiter) {
+		this.delimiter = delimiter;
+	}
+
+	public Converter ( Map<String, String> header, String delimiter ) {
         
         this.delimiter = delimiter;
 

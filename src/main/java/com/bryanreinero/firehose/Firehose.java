@@ -4,33 +4,75 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.cli.ParseException;
-
+import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
-import com.bryanreinero.util.WorkerPool.Executor;
 import com.bryanreinero.util.DAO;
-import com.bryanreinero.util.Printer;
-import com.bryanreinero.util.WorkerPool;
+import com.bryanreinero.util.Application;
+import com.bryanreinero.util.WorkerPool.Executor;
 import com.mongodb.DBObject;
 
 public class Firehose implements Executor {
 	
-	private final WorkerPool workers;
-	private int numThreads = 1;
-	private AtomicInteger linesRead = new AtomicInteger(0);
-	private Converter converter;
+	private final Application worker;
 	private final SampleSet samples;
+	private AtomicInteger linesRead = new AtomicInteger(0);
+	private Converter converter = new Converter();
 	private BufferedReader br = null;
 	private DAO dao = null;
-	private Printer printer = null;
 	
 	private Boolean verbose = false;
 	private String filename = null;
 	
 
+	public Firehose ( String[] args ) throws Exception {
+		
+		Map<String, CallBack> myCallBacks = new HashMap<String, CallBack>();
+		
+		// custom command line callback for csv conversion
+		myCallBacks.put("h", new CallBack() {
+			@Override
+			public void handle(String[] values) {
+				for (String column : values) {
+					String[] s = column.split(":");
+					converter.addField( s[0], Transformer.getTransformer( s[1] ) );
+				}
+			}
+		});
+		
+		// custom command line callback for delimeter
+		myCallBacks.put("d", new CallBack() {
+			@Override
+			public void handle(String[] values) {
+				converter.setDelimiter( values[0] );
+			}
+		});
+
+		// custom command line callback for delimeter
+		myCallBacks.put("f", new CallBack() {
+			@Override
+			public void handle(String[] values) {
+				filename  = values[0];
+				try { 
+					br = new BufferedReader(new FileReader(filename));
+				}catch (Exception e) {
+					e.printStackTrace();
+					System.exit(-1);
+				}
+			}
+		});
+
+		worker = Application.ApplicationFactory.getApplication(this, args, myCallBacks );
+		samples = worker.getSampleSet();
+		dao = worker.getDAO();
+		worker.addPrinable( this );
+		worker.start();
+	}
+	
     @Override
     public void execute() {
         String currentLine = null;
@@ -44,12 +86,9 @@ public class Firehose implements Executor {
         	}
             readLine.mark();
             
-            if ( currentLine == null ) {
-            	//total.mark();
-            	//System.out.println("Reached end of file. Stopping intake");
-                stop();
-                
-            }
+            if ( currentLine == null )
+                worker.stop();
+             
             else {
                 linesRead.incrementAndGet();
                 
@@ -67,6 +106,7 @@ public class Firehose implements Executor {
    
             }
         } catch (IOException e) {
+        	worker.stop();
             e.printStackTrace();
             
             try {
@@ -79,55 +119,16 @@ public class Firehose implements Executor {
         }
     }
     
-    public void setConverter ( Converter converter ) {
-    	this.converter = converter;
-    }
-    
     public void setInput( String filename ) throws FileNotFoundException {
     	this.filename  = filename;
     	br = new BufferedReader(new FileReader(filename));
     }
     
-    public void setDao( DAO dao ) {
-    	this.dao = dao;
-    }
-    
-	public void setThreadCount( int count ) {
-		numThreads = count;
-	}
-	
-	public void setVerbose( Boolean v ) {
-		this.verbose = v;
-	}
-	
-	public void setPrinter( Printer printer ) {
-		this.printer = printer;
-		this.printer.addPrintable(this);
-	}
-	
-	public void setTTL( Long ttl ) {
-		samples.setTimeToLive( ttl );
-	}
-	
-	public void setConsoleMode( boolean bool ) {
-		printer.setConsole(bool );
-	}
-	
-	public void start() {
-		printer.start();
-		workers.start( numThreads );
-	}
-	
-	public void stop() {
-		workers.stop();
-		printer.stop();
-		samples.stop();
-	}
 	
 	@Override 
 	public String toString() {
 		StringBuffer buf = new StringBuffer("{ ");
-		buf.append("threads: "+workers.getNumThreads() );
+		buf.append("threads: "+worker.getNumThreads() );
 		buf.append(", \"lines read\": "+ this.linesRead );
 		buf.append(", samples: "+ samples );
 		
@@ -140,32 +141,14 @@ public class Firehose implements Executor {
 		return buf.toString();
 	}
     
-    public Firehose() {
-    	workers = new WorkerPool(this);
-    	samples = new SampleSet();
-    }
-    
     public static void main( String[] args ) {
-    	Firehose hoser = new Firehose();
-    	CommandLineInterface cli;
+    	
     	try {
-    		cli = new CommandLineInterface(hoser);
-			cli.parse(args);
-			hoser.start();
-		} catch ( ParseException e1 ) {
-			System.exit(-1);
-		}
+    		Firehose hose = new Firehose( args );
+		} 
 		catch (Exception e) {
 			e.printStackTrace();
 			System.exit(-1);
 		}
     }
-
-	public void setDurability(String[] values ) {
-		
-		for( String val : values ) {
-			String[] s = val.split(":");
-			dao.setDurability( s[0], s[1]);
-		}
-	}
 }
