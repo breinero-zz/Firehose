@@ -28,7 +28,6 @@ public class Firehose implements Executor {
 	private Boolean verbose = false;
 	private String filename = null;
 	
-
 	public Firehose ( String[] args ) throws Exception {
 		
 		Map<String, CallBack> myCallBacks = new HashMap<String, CallBack>();
@@ -118,12 +117,6 @@ public class Firehose implements Executor {
             }
         }
     }
-    
-    public void setInput( String filename ) throws FileNotFoundException {
-    	this.filename  = filename;
-    	br = new BufferedReader(new FileReader(filename));
-    }
-    
 	
 	@Override 
 	public String toString() {
