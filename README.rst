@@ -2,51 +2,40 @@
 Firehose
 ========
 
-:Description: A tool import for text files such as CSV's and TSV's into MongoDB.
+:Description: A tool import for DSV files into MongoDB.
 :Author: Bryan Reinero <breinero@gmail.com>
 
-License
--------
+Overview 
+========
 
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
+Firehose is both a mulithreaded DSV import tool for MongoDB, AND a instrumented execution framework which you can use to benchmark your own applications.
 
-Dependencies
-============
+Firehose includes these major components:
+ - A simple code instrumentation and reporting library com.bryanreinero.firehose.cli
+ - A customizable command line interface in package com.bryanreinero.firehose.cli
+ - A multithreaded worker pool com.bryanreinero.firehose.WorkerPool
+ - An application framework for using all of these components together, com.bryanreinero.firehose.util.Application
 
-Firehose is supported ands somewhat tested on Java 1.7
+Firehose's DSV import functionality is actually just an example application which uses all of these components together to do useful work. Let's take a look the import tool to see how it all works.
 
-Additional dependencies are:
-- MongoDB Java Driver `http://docs.mongodb.org/ecosystem/drivers/java/`
-- (Unit Tests) JUnit 4  `http://junit.org/`
-- Apache Commons CLI 1.2 `http://commons.apache.org/proper/commons-cli/`
+Firehose by Example: The DSV Import Tool
+----------------------------------------
 
-Usage
------
+Ok, so I want to read a csv file and import those records into MongoDB as fast as I can. To get that CSV into MongoDB I will need to execute a three step process on each line of the file;
 
- -cr        print output in console mode, when possible
- -cols <columns>     ',' delimited list of columns [name:type]
- -delim              the value separator used to parse columns. Default
-                     ','
- -dur <durability>   write concern. Default = NORMAL
- -f <file>           filename to import. REQUIRED
- -h                  print help info
- -i <interval>       sample interval over which to report stats,
-                     (milleseconds)
- -m <mongos>         ',' delimited list of mongos'es. Default
-                     localhost:27017,
- -n <namespace>      target namespace. REQUIRED
- -p <report>         print progress every 'n' seconds
- -t <threads>        number of threads. Default 1.
- -v                  Enable verbose output
+- Read the next line from the file
+- Parse the line, converting it into a object prepped for insertion
+- Insert the new object into MongoDB
 
-Example run
------------
+As a curious and conscientious software engineer, I am very interested to know how much time each of these steps so that I can establish performance baselines. I can use Firehose's instrumentation library to mark the start end of each step with use of the `com.bryanreinero.firehose.metrics.Interval <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ class. For instance, here's how I determine how long and individual insertion took
 
 ::
 
- java -jar target/Firehose-0.1.0.one-jar.jar -f /Users/breinero/blah.csv  -n test.insert -cols _id:objectid,count:float,sum:float,name:string -t 2
+    Interval insertDuration = samples.set("insert"); // Set the time marker
+    dao.insert( object ); // perform the actual work
+    insertDuration.mark(); // mark the operation as complete
 
-This command line invokes Firehose with 2 threads, parsing a csv file of 4 columns. Each column is to be translated into json fields named "_id", "count", "sum" and "name", of types ObjectId, float, float, string respectively.
+The insertDuration Interval is collected and averaged automatically by Firehose giving me mean latency of the insertion operation. Firehose will then pretty-print the running average to the console so that I may see how fast my operations are executing in real time.
 
 Firehose pretty prints this output, ( refreshing the console each second)
 
@@ -83,7 +72,110 @@ Firehose pretty prints this output, ( refreshing the console each second)
     }
 }
 
-This output tells me that inserts are taking an average of 182 microseconds, as averaged over a time interval of 1000000 microsecs, (1 second). During this 1 second interval I inserted 7926 documents. As the output is printed in JSON format I can insert these stats into MongoDB for benchmarking analysis!
+This output tells me that inserts are taking an average of 182 microseconds, as averaged over a time interval of 1000000 microseconds, (1 second). During this 1 second interval I inserted 7926 documents. As the output is printed in JSON format I can insert these stats into MongoDB for benchmarking analysis!
+
+You can take a look at how this workload is processed `here <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L35>`_
+
+Firehose by Example: The DSV Import Command Line Interface
+----------------------------------------------------------
+
+Under the hood, Firehose uses the `Apache Commons CLI library <http://commons.apache.org/proper/commons-cli/>`_ to parse command line options passed in at runtime. I've wrapped the Commons CLI into Firehose's framework such that I can configure my own set of command line options easily. Using the CLI framework is a two step process.
+
+1. Declare my command line options in a properties file
+#. Assign callback methods to handle the input
+
+As an example let's take a look at the usage for Firehose's DSV Import feature:  
+
+Usage
+-----
+
+ -cr,--noPretty                 print out in CR-delimited lines. Default
+                                is console mode pretty printing, when
+                                possible
+ -d,--delimiter <delimeter>     the value separator used to parse columns.
+                                Default ','
+ -f,--file <file>               filename to import (full path)
+ -fs,--fsync                    enable write concern wait for page flush
+ -h,--headers <headers>         ',' delimited list of columns [name:type]
+ -j,--journal                   enable write concern wait for journal
+                                commit
+ -m,--mongos <mongos>           ',' delimited list of mongodb host to
+                                connect to. Default localhost:27017,
+ -ns,--namespace <namespace>    target database and collection this work
+                                will use
+ -pi,--printInterval            print output every n seconds
+ -ri,--reporti=Interval         average stats over an time interval of i
+                                milliseconds
+ -t,--threads <threads>         number of worker threads. Default 1
+ -v,--verbose                   Enable verbose output
+ -wc,--writeConcern <concern>   write concern. Default = w:1
+
+To generate these options I first declared the options I wanted to use inside my `options.json <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/options.json>`_ file. Here's a snippet of the file:
+
+::
+
+    {
+    "applicaiton": "Firehose",
+    "options": [
+        {
+            "op": "m",
+            "longOpt" : "mongos",
+            "name": "mongos",
+            "description": "',' delimited list of mongodb host to connect to. Default localhost:27017,",
+            "args": "multi",
+            "separator": ","
+        },
+        {
+            "op": "f",
+            "longOpt" : "file",
+            "name": "file",
+            "description":"filename to import (full path)",
+            "required": true,
+            "args" : 1
+        },
+        {
+            "op": "t",
+            "longOpt" : "threads",
+            "name": "threads",
+            "description": "number of worker threads. Default 1",
+            args: 1
+        }
+    } 
+
+Firehose will read this file at application start up, creating the specific command line options I need to run the application. Now, all I need to do is define a set of callbacks which handle the processing of my command line options when a user actually runs the DSV Import tool. For example, here's the callback for handling input on the "-t" (or number of worker threads in the pool) option.
+
+::
+
+        cli.addCallBack("t", new CallBack() {
+            @Override
+            public void handle(String[] values) {
+                numThreads = Integer.parseInt(values[0]);
+            }
+        });
+
+You can examine more examples in the `code <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java#L94>`_. 
+
+
+Dependencies
+============
+
+Firehose is supported and somewhat tested on Java 1.7
+
+Additional dependencies are:
+- `MongoDB Java Driver <http://docs.mongodb.org/ecosystem/drivers/java/>`_
+- `JUnit 4 <http://junit.org/>`_
+- `Apache Commons CLI 1.2 <http://commons.apache.org/proper/commons-cli/>`_
+
+
+Example run
+-----------
+
+::
+
+ java -jar target/Firehose-0.1.0.one-jar.jar -f /Users/breinero/blah.csv  -n test.insert -cols _id:objectid,count:float,sum:float,name:string -t 2
+
+This command line invokes Firehose with 2 threads, parsing a csv file of 4 columns. Each column is to be translated into json fields named "_id", "count", "sum" and "name", of types ObjectId, float, float, string respectively.
+
 
 Using Firehose for Code Instrumentation
 ---------------------------------------
@@ -93,20 +185,6 @@ As a consultant, I often advise my clients to instrument their application code 
 
 While most developers will acknowledge the value of instrumentation, few actually implement it. So to help them along, Firehose has some basic insturmentation boiled right into it. In fact, Firehose's csv import methods also serve as a great example of how you can use the instrumentation features in your own p.o.c.. Take a peek here:
 
-https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L35
-
-Notice that the import of each record follows a three step process
-- Read the next line from teh csv
-- Parse the line and build a Java object ready for insertion
-- Insert the new object into MongoDB
-
-I want to know how much time each of these steps take, so I mark the start end of each step with use of the Interval.class. For instance, here's how I determine how long and individual insertion took
-
-::
-
-    Interval insert = samples.set("insert"); // Set the time marker
-    dao.insert( object );
-    insert.mark(); // mark the operation as complete
     
 License
 -------
