@@ -1,7 +1,6 @@
 package com.bryanreinero.firehose;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
@@ -65,10 +64,11 @@ public class Firehose implements Executor {
 			}
 		});
 
-		worker = Application.ApplicationFactory.getApplication(this, args, myCallBacks );
+		worker = Application.ApplicationFactory.getApplication(this, args,
+				myCallBacks);
 		samples = worker.getSampleSet();
 		dao = worker.getDAO();
-		worker.addPrinable( this );
+		worker.addPrinable(this);
 		worker.start();
 	}
 	
@@ -137,10 +137,10 @@ public class Firehose implements Executor {
     public static void main( String[] args ) {
     	
     	try {
-    		Firehose hose = new Firehose( args );
+    		new Firehose( args );
 		} 
 		catch (Exception e) {
-			e.printStackTrace();
+			System.out.println( e.getMessage() );
 			System.exit(-1);
 		}
     }

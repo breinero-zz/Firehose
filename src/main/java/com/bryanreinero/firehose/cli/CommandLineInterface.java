@@ -14,11 +14,7 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 
-import com.bryanreinero.util.OptionFactory;
-
 public class CommandLineInterface {
-
-	private static final String DefaultDelimiter = ",";
 
 	private Options options;
 
@@ -33,7 +29,8 @@ public class CommandLineInterface {
 	}
 	
 
-	public CommandLineInterface() throws Exception  {
+	public CommandLineInterface( ) throws Exception  {
+		
 		InputStream is = Options.class.getResourceAsStream("/options.json");
 		try {
 			options = OptionFactory.parseJSON( OptionFactory.ingest( is ) );

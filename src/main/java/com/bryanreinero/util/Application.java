@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.cli.MissingOptionException;
+
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;
 import com.bryanreinero.firehose.metrics.SampleSet;
@@ -40,8 +42,12 @@ public class Application {
 				for ( Entry<String, CallBack> e : cbs.entrySet() )
 					w.cli.addCallBack(e.getKey(), e.getValue());
 				
-				// the CLI is ready to parse the command line
-				w.cli.parse(args);
+				try { 
+					// the CLI is ready to parse the command line
+					w.cli.parse(args);
+				} catch ( MissingOptionException e) {
+					w.cli.printHelp();
+				}
 				
 				// Sanity checking
 				if(  w.collectionName == null )

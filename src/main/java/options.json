@@ -5,7 +5,7 @@
             "op": "m",
             "longOpt" : "mongos",
             "name": "mongos",
-            "description": "',' delimited list of mongos'es. Default localhost:27017,",
+            "description": "',' delimited list of mongodb host to connect to. Default localhost:27017,",
             "args": "multi",
             "separator": ","
         },

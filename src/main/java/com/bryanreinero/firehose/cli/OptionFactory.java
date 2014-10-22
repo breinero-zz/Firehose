@@ -1,4 +1,4 @@
-package com.bryanreinero.util;
+package com.bryanreinero.firehose.cli;
 
 import java.io.IOException;
 import java.io.InputStream;
