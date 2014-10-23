@@ -207,10 +207,11 @@ Using The Application Framework
 -------------------------------
 
 Firehose's application framework made for standing up simple load test quickly. As such, it comes with a set of command line options fully configured for control of the worker pool, instrumentation library and access to MongoDB. Users of the application framework need only to add:
-    - Any extra commandline options specific to their application
+
+    - Any extra command line options specific to their application
     - An instance of `Executable <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L9>`_ which the worker pool calls as a unit of work 
 
-Let's again use the DSV import tool as an example. The application framework is initialize inside Firehose's `constructor <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L30>`_. The first step is to define the appropriate command line interface calbacks I need to handle user input.
+Let's again use the DSV import tool as an example. The application framework is initialize inside Firehose's `constructor <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L30>`_. The first step is to define the appropriate command line interface callbacks I need to handle user input.
 
 ::
 
@@ -251,7 +252,7 @@ Let's again use the DSV import tool as an example. The application framework is 
             }
         });
 
-Remeber, the `Application <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java#L92>`_ class has already defined CLI callbacks for the worker pool, instrumentation engine and MongoDB driver. All I needed to add where the callbacks for the imput file, value delimiter and column headers. I've defined these callbacks as a collection of anonymous functions which I pass to the Application class' constructor:
+Remember, the `Application <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java#L92>`_ class has already defined CLI callbacks for the worker pool, instrumentation engine and MongoDB driver. All I needed to add where the callbacks for the input file, value delimiter and column headers. I've defined these callbacks as a collection of anonymous functions which I pass to the Application class' constructor:
 
 ::
 
@@ -262,7 +263,7 @@ The Application class' constructor takes 3 parameters
     #. A String array of the command line options
     #. A list of custom command line callbacks
 
-Bingo. I'm ready to rock and roll. Notice that the 'this' in the first parameter refers to an instance of the Firehose class, which implements Executable. The overridded `execute() <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ method is where all the work is done. 
+Bingo. I'm ready to rock and roll. Notice that the 'this' in the first parameter refers to an instance of the Firehose class, which implements Executable. The overridden `execute() <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ method is where all the work is done. 
 
 Why Firehose?
 -------------
