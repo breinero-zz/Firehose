@@ -94,7 +94,7 @@ Usage
 
 .. list-table::
    :header-rows: 1
-   :widths: 10,20,20,90
+   :widths: 10,25,20,90
 
    * - **option**
      - **long form**
@@ -203,6 +203,74 @@ Example run
 
 This command line invokes Firehose with 2 threads, parsing a CSV file of 4 columns. Each column is to be translated into json fields named "_id", "count", "sum" and "name", of types ObjectId, float, float, string respectively.
 
+Using The Application Framework
+-------------------------------
+
+Firehose's application framework made for standing up simple load test quickly. As such, it comes with a set of command line options fully configured for control of the worker pool, instrumentation library and access to MongoDB. Users of the application framework need only to add:
+    - Any extra commandline options specific to their application
+    - An instance of `Executable <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L9>`_ which the worker pool calls as a unit of work 
+
+Let's again use the DSV import tool as an example. The application framework is initialize inside Firehose's `constructor <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L30>`_. The first step is to define the appropriate command line interface calbacks I need to handle user input.
+
+::
+
+        public Firehose ( String[] args ) throws Exception {
+        
+        Map<String, CallBack> myCallBacks = new HashMap<String, CallBack>();
+        
+        // custom command line callback for csv conversion
+        myCallBacks.put("h", new CallBack() {
+            @Override
+            public void handle(String[] values) {
+                for (String column : values) {
+                    String[] s = column.split(":");
+                    converter.addField( s[0], Transformer.getTransformer( s[1] ) );
+                }
+            }
+        });
+        
+        // custom command line callback for delimeter
+        myCallBacks.put("d", new CallBack() {
+            @Override
+            public void handle(String[] values) {
+                converter.setDelimiter( values[0] );
+            }
+        });
+
+        // custom command line callback for delimeter
+        myCallBacks.put("f", new CallBack() {
+            @Override
+            public void handle(String[] values) {
+                filename  = values[0];
+                try { 
+                    br = new BufferedReader(new FileReader(filename));
+                }catch (Exception e) {
+                    e.printStackTrace();
+                    System.exit(-1);
+                }
+            }
+        });
+
+Remeber, the `Application <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java#L92>`_ class has already defined CLI callbacks for the worker pool, instrumentation engine and MongoDB driver. All I needed to add where the callbacks for the imput file, value delimiter and column headers. I've defined these callbacks as a collection of anonymous functions which I pass to the Application class' constructor:
+
+::
+
+    worker = Application.ApplicationFactory.getApplication(this, args, myCallBacks);
+
+The Application class' constructor takes 3 parameters
+    1. A class which implements Executor
+    #. A String array of the command line options
+    #. A list of custom command line callbacks
+
+Bingo. I'm ready to rock and roll. Notice that the 'this' in the first parameter refers to an instance of the Firehose class, which implements Executable. The overridded `execute() <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ method is where all the work is done. 
+
+Why Firehose?
+-------------
+
+As a consultant, I often advise my clients to instrument their application code such that they have a baseline of performance metrics. Instrumenting Getting baselines are extremely useful both in identifying bottlenecks as well as understanding how much concurrency your application can handle, determine what latency is "normal" for the application and indicate when performance is deviating from those norms.
+
+While most developers will acknowledge the value of instrumentation, few actually implement it. So to help them along, Firehose was designed with some basic instrumentation boiled right into it.
+
 
 Dependencies
 ------------
@@ -213,14 +281,6 @@ Additional dependencies are:
     - `MongoDB Java Driver <http://docs.mongodb.org/ecosystem/drivers/java/>`_
     - `JUnit 4 <http://junit.org/>`_
     - `Apache Commons CLI 1.2 <http://commons.apache.org/proper/commons-cli/>`_
-
-
-Why Firehose?
--------------
-
-As a consultant, I often advise my clients to instrument their application code such that they have a baseline of performance metrics. Instrumenting Getting baselines are extremely useful both in identifying bottlenecks as well as understanding how much concurrency your application can handle, determine what latency is "normal" for the application and indicate when performance is deviating from those norms.
-
-While most developers will acknowledge the value of instrumentation, few actually implement it. So to help them along, Firehose was designed with some basic instrumentation boiled right into it.
 
     
 License
