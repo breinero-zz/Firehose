@@ -1,10 +1,10 @@
 {
-    "applicaiton": "Firehose",
+    "application": "Firehose",
     "options": [
         {
             "op": "m",
             "longOpt" : "mongos",
-            "name": "mongos",
+            "name": "hostname:port",
             "description": "',' delimited list of mongodb host to connect to. Default localhost:27017,",
             "args": "multi",
             "separator": ","
@@ -12,15 +12,15 @@
         {
             "op": "f",
             "longOpt" : "file",
-            "name": "file",
-            "description":"filename to import (full path)",
+            "name": "filepath",
+            "description":"filename to import",
             "required": true,
             "args" : 1
         },
         {
             "op": "t",
             "longOpt" : "threads",
-            "name": "threads",
+            "name": "number",
             "description": "number of worker threads. Default 1",
             args: 1
         },
@@ -34,7 +34,7 @@
         {
             "op": "ns",
             "longOpt" : "namespace",
-            "name": "namespace",
+            "name": "database.collection",
             "description": "target database and collection this work will use",
             "required": true,
             "args": 2,
@@ -44,8 +44,8 @@
         {
             "op": "h",
             "longOpt" : "headers",
-            "name": "headers",
-            "description": "',' delimited list of columns [name:type]",
+            "name": "name:type",
+            "description": "',' delimited list of columns",
             "required": "true",
             "args": "multi",
             "separator": ","
