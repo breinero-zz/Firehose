@@ -199,7 +199,7 @@ Example run
 
 ::
 
- java -jar target/Firehose-0.1.0.one-jar.jar -f /Users/breinero/blah.csv  -n test.insert -cols _id:objectid,count:float,sum:float,name:string -t 2
+ java -jar target/Firehose-0.1.0.one-jar.jar -f test.csv -d , -ns test.firehose -h _id:objectid,count:float,sum:float,name:string -t 2
 
 This command line invokes Firehose with 2 threads, parsing a CSV file of 4 columns. Each column is to be translated into json fields named "_id", "count", "sum" and "name", of types ObjectId, float, float, string respectively.
 
@@ -210,6 +210,7 @@ Firehose's application framework made for standing up simple load test quickly. 
 
     - Any extra command line options specific to their application
     - An instance of `Executable <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L9>`_ which the worker pool calls as a unit of work 
+
 
 Let's again use the DSV import tool as an example. The application framework is initialize inside Firehose's `constructor <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L30>`_. The first step is to define the appropriate command line interface callbacks I need to handle user input.
 
@@ -271,7 +272,6 @@ Why Firehose?
 As a consultant, I often advise my clients to instrument their application code such that they have a baseline of performance metrics. Instrumenting Getting baselines are extremely useful both in identifying bottlenecks as well as understanding how much concurrency your application can handle, determine what latency is "normal" for the application and indicate when performance is deviating from those norms.
 
 While most developers will acknowledge the value of instrumentation, few actually implement it. So to help them along, Firehose was designed with some basic instrumentation boiled right into it.
-
 
 Dependencies
 ------------
