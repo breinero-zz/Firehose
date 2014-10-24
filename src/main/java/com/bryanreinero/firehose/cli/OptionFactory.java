@@ -147,11 +147,12 @@ public class OptionFactory {
 
 	}
 
-	public static Options parseJSON( String json ) {
+	public static Options parseJSON( String appName, String json ) {
 		 Options options = new Options();
 		
 		DBObject config = (DBObject) JSON.parse(json);
-		List<DBObject> ops = (List<DBObject>)config.get("options");
+		List<DBObject> ops = (List<DBObject>)((DBObject)config.get(appName)).get("options");
+		
 		
 		for( DBObject opt : ops ) {
 			if( opt.containsField("op") == false )
@@ -180,10 +181,5 @@ public class OptionFactory {
 
 		reader.close();    
 		return sb.toString();
-	}
-
-	public static void main ( String[] args ) {
-		String json = "{ ops: [] } ";
-		OptionFactory.parseJSON(json);
 	}
 }

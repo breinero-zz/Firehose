@@ -17,6 +17,7 @@ import com.mongodb.DBObject;
 
 public class Firehose implements Executor {
 	
+	private static final String appName = "Firehose";
 	private final Application worker;
 	private final SampleSet samples;
 	private AtomicInteger linesRead = new AtomicInteger(0);
@@ -64,7 +65,8 @@ public class Firehose implements Executor {
 			}
 		});
 
-		worker = Application.ApplicationFactory.getApplication(this, args,
+		
+		worker = Application.ApplicationFactory.getApplication( appName, this, args,
 				myCallBacks);
 		samples = worker.getSampleSet();
 		dao = worker.getDAO();
@@ -140,7 +142,7 @@ public class Firehose implements Executor {
     		new Firehose( args );
 		} 
 		catch (Exception e) {
-			System.out.println( e.getMessage() );
+			e.printStackTrace();
 			System.exit(-1);
 		}
     }

@@ -15,6 +15,7 @@ import com.mongodb.ServerAddress;
 
 public class Application {
 	
+	private final static String appName = "ApplicationFramework";
 	private final WorkerPool workers;
 	private final CommandLineInterface cli;
 	private Printer printer = new Printer( DEFAULT_PRINT_INTERVAL );
@@ -34,10 +35,11 @@ public class Application {
 	
 	
 	public static class ApplicationFactory {
-		public static Application getApplication( Executor executor, String[] args, Map<String, CallBack> cbs ) throws Exception {
+		public static Application getApplication( String name, Executor executor, String[] args, Map<String, CallBack> cbs ) throws Exception {
 			try {
 				Application w = new Application(executor);
 				
+				w.cli.addOptions(name);
 				//add custom callbacks
 				for ( Entry<String, CallBack> e : cbs.entrySet() )
 					w.cli.addCallBack(e.getKey(), e.getValue());
@@ -47,6 +49,7 @@ public class Application {
 					w.cli.parse(args);
 				} catch ( MissingOptionException e) {
 					w.cli.printHelp();
+					throw new Exception( "bad options", e );
 				}
 				
 				// Sanity checking
@@ -96,7 +99,7 @@ public class Application {
 		// prep the CLI with a set of 
 		// standard CL option handlers
 		cli = new CommandLineInterface();
-
+		cli.addOptions(appName);
 		cli.addCallBack("t", new CallBack() {
 
 			@Override

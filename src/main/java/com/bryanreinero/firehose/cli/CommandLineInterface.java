@@ -4,7 +4,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.UnknownHostException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.cli.CommandLine;
@@ -16,7 +18,7 @@ import org.apache.commons.cli.Options;
 
 public class CommandLineInterface {
 
-	private Options options;
+	private Options options = new Options();
 
 	private HelpFormatter formatter = new HelpFormatter();
 	private CommandLineParser parser = new GnuParser();
@@ -28,17 +30,23 @@ public class CommandLineInterface {
 		callbacks.put(key, cb);
 	}
 	
-
-	public CommandLineInterface( ) throws Exception  {
+	
+	public void addOptions( String appName ) throws Exception  {
 		
-		InputStream is = Options.class.getResourceAsStream("/options.json");
+		InputStream is = CommandLineInterface.class.getClassLoader().getResourceAsStream("options.json");
+		
 		try {
-			options = OptionFactory.parseJSON( OptionFactory.ingest( is ) );
+			
+			Options newOptions = OptionFactory.parseJSON( appName, OptionFactory.ingest( is ) );
+			
+			Iterator<Option> it = newOptions.getOptions().iterator();
+			while( it.hasNext() )
+				options.addOption( it.next() );
+			
 		} catch (IOException e) {
 			throw new Exception( "Can't read options configuration", e );
 		}
 	}
-	
 
 	public void printHelp() {
 		formatter.printHelp("Firehose", options);
