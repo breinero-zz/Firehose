@@ -16,6 +16,7 @@ public class RandomDSVGenerator {
 	private final static String appName = "RandomDSVGenerator"; 
 	private int totalLines;
 	private BufferedWriter bw = null;
+	private char delimiter = ',';
 	
 	public RandomDSVGenerator ( String[] args ) { 
 		
@@ -41,6 +42,13 @@ public class RandomDSVGenerator {
 				totalLines = Integer.parseInt( values[0] );
 			}
 		});
+		
+		cli.addCallBack("d", new CallBack() {
+			@Override
+			public void handle(String[] values) {
+				delimiter =  values[0].charAt(0) ;
+			}
+		});
 
 		cli.parse( args );
 		
@@ -58,11 +66,11 @@ public class RandomDSVGenerator {
 		for( int i = 0; i < totalLines; i++ ) {
 			
 			StringBuffer buf = new StringBuffer( (new ObjectId()).toString() );
-			buf.append(",");
+			buf.append( delimiter );
 			buf.append(rand.nextFloat());
-			buf.append(",");
+			buf.append( delimiter );
 			buf.append(rand.nextFloat());
-			buf.append(",");
+			buf.append( delimiter );
 			buf.append(new Object());
 			buf.append("\n");
 			try {

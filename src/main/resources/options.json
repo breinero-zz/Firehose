@@ -99,6 +99,12 @@
                 "longOpt" : "fsync",
                 "name": "sync",
                 "description": "enable write concern wait for page flush"
+            },
+            {
+            	"op": "b",
+            	"longOpt": "batch",
+            	"args": 1,
+            	"description": "Bulk write in batches of n"
             }
         ]
     },
@@ -119,6 +125,13 @@
                 "required": true,
                 "args" : 1,
                 "description": "number of lines to write to the csv"
+            },
+            {
+                "op": "d",
+                "longOpt" : "delimiter",
+                "name": "delimeter",
+                "description": "the value separator used to separate columns. Default ','",
+                "args": 1
             }
         ]
     }

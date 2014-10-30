@@ -47,7 +47,7 @@ public class Firehose implements Executor {
 		myCallBacks.put("d", new CallBack() {
 			@Override
 			public void handle(String[] values) {
-				converter.setDelimiter( values[0] );
+				converter.setDelimiter( values[0].charAt(0) );
 			}
 		});
 
