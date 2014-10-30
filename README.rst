@@ -272,9 +272,10 @@ Build and Quickly Test Firehose
 I've included a CSV file generator called RandomDSVGenerator so that you may test your build and see Firehose in action with minimal effort. Simply run the following commands from the the command line prompt.
 
 ::
-    $ mvn compile 
-    $ java -cp target/Firehose-0.1.0.jar com.bryanreinero.firehose.test.RandomDSVGenerator so that you may-n 10000
-    $ java -jar target/Firehose-0.1.0.one-jar.jar -f test.csv -d , -ns test.firehose -h _id:objectid,count.0:float,count.1:float,name:string -t 20
+
+ $ mvn package 
+ $ java -cp target/Firehose-<VERSION>.jar com.bryanreinero.firehose.test.RandomDSVGenerator so that you may-n 10000
+ $ java -jar target/Firehose-<VERSION>.one-jar.jar -f test.csv -d , -ns test.firehose -h _id:objectid,count.0:float,count.1:float,name:string -t 20
 
 Why Firehose?
 -------------
