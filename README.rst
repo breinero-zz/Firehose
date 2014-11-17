@@ -30,7 +30,7 @@ Ok, so I want to read a CSV file and import those records into MongoDB as fast a
 - Parse the line, converting it into a object prepped for insertion
 - Insert the new object into MongoDB
 
-As a curious and conscientious software engineer, I am very interested to know how much time each of these steps so that I can establish performance baselines. I can use Firehose's instrumentation library to mark the start end of each step with use of the `Interval class <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ class. For instance, here's how I determine how long and individual insertion took
+As a curious and conscientious software engineer, I am very interested to know how much time each of these steps take so that I can establish performance baselines. I can use Firehose's instrumentation library to mark the start and end of each step with use of the `Interval class <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ class. For instance, here's how I determine how long and individual insertion takes.
 
 ::
 
@@ -84,10 +84,10 @@ Firehose by Example: The DSV Import Command Line Interface
 
 Under the hood, Firehose uses the `Apache Commons CLI library <http://commons.apache.org/proper/commons-cli/>`_ to parse command line options passed in at runtime. Firehose wraps the Commons CLI into the framework such that we can configure my own set of command line options easily. Using the CLI framework is a two step process.
 
-1. Declare my command line options in a properties file
+1. Declare command line options in a properties file
 #. Assign callback methods to handle the input
 
-As an example let's take a look at the usage for Firehose's DSV Import feature uses the Commons CLI:  
+As an example let's take a look at the usage for Firehose's DSV Import feature to see how it uses the Commons CLI:  
 
 Usage
 -----
@@ -123,11 +123,11 @@ Usage
    * - -m,
      - --mongos 
      - <host:port>           
-     - ',' delimited list of mongodb host to connect to. Default localhost:27017,
+     - ',' delimited list of mongodb hosts to connect to. Default localhost:27017
    * - -ns,
      - --namespace 
      - <namespace>    
-     - target database and collection this work will use
+     - target database and collection this work will use (format: 'db.col')
    * - -pi,
      - --printInterval  
      - <seconds>
@@ -135,7 +135,7 @@ Usage
    * - -ri,
      - --reportInterval
      - <seconds>        
-     - average stats over an time interval of i milliseconds
+     - average stats over a time interval of i milliseconds
    * - -t,
      - --threads 
      - <threads>         
@@ -206,13 +206,13 @@ This command line invokes Firehose with 2 threads, parsing a CSV file of 4 colum
 Using The Application Framework
 -------------------------------
 
-Firehose's application framework made for standing up simple load test quickly. As such, it comes with a set of command line options fully configured for control of the worker pool, instrumentation library and access to MongoDB. Users of the application framework need only to add:
+Firehose's application framework is made for standing up simple load tests quickly. As such, it comes with a set of command line options fully configured for control of the worker pool, instrumentation library, and access to MongoDB. Users of the application framework need only add:
 
     - Any extra command line options specific to their application
     - An instance of `Executable <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L9>`_ which the worker pool calls as a unit of work 
 
 
-Let's again use the DSV import tool as an example. The application framework is initialize inside Firehose's `constructor <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L30>`_. The first step is to define the appropriate command line interface callbacks I need to handle user input.
+Let's again use the DSV import tool as an example. The application framework is initialized inside Firehose's `constructor <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L30>`_. The first step is to define the appropriate command line interface callbacks I need to handle user input.
 
 ::
 
@@ -274,13 +274,13 @@ I've included a CSV file generator called RandomDSVGenerator so that you may tes
 ::
 
  $ mvn package 
- $ java -cp target/Firehose-<VERSION>.jar com.bryanreinero.firehose.test.RandomDSVGenerator so that you may-n 10000
+ $ java -cp target/Firehose-<VERSION>.jar com.bryanreinero.firehose.test.RandomDSVGenerator -f test.csv -n 10000
  $ java -jar target/Firehose-<VERSION>.one-jar.jar -f test.csv -d , -ns test.firehose -h _id:objectid,count.0:float,count.1:float,name:string -t 20
 
 Why Firehose?
 -------------
 
-As a consultant, I often advise my clients to instrument their application code such that they have a baseline of performance metrics. Instrumenting Getting baselines are extremely useful both in identifying bottlenecks as well as understanding how much concurrency your application can handle, determine what latency is "normal" for the application and indicate when performance is deviating from those norms.
+As a consultant, I often advise my clients to instrument their application code such that they have a baseline of performance metrics. Getting baselines is extremely useful in identifying bottlenecks, understanding how much concurrency your application can handle, determining what latency is "normal" for the application, and indicating when performance is deviating from those norms.
 
 While most developers will acknowledge the value of instrumentation, few actually implement it. So to help them along, Firehose was designed with some basic instrumentation boiled right into it.
 
