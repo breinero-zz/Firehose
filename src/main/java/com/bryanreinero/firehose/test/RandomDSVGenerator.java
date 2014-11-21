@@ -17,6 +17,7 @@ public class RandomDSVGenerator {
 	private int totalLines;
 	private BufferedWriter bw = null;
 	private char delimiter = ',';
+	private char seperator = ':';
 	
 	public RandomDSVGenerator ( String[] args ) { 
 		
@@ -63,6 +64,21 @@ public class RandomDSVGenerator {
 	public void execute() {
 		Random rand = new Random();
 		
+		// write delimeter, seperator, and header as first line of file
+		StringBuffer hdr = new StringBuffer();
+		hdr.append( delimiter );
+		hdr.append( seperator );
+		hdr.append("_id:objectid,count:float,sum:float,name:string");
+		hdr.append("\n");
+		try {
+			bw.write(hdr.toString());
+			bw.flush();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit( -1 );
+		}
+
 		for( int i = 0; i < totalLines; i++ ) {
 			
 			StringBuffer buf = new StringBuffer( (new ObjectId()).toString() );

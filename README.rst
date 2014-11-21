@@ -2,13 +2,13 @@
 Firehose
 ========
 
-:Description: A tool import for DSV files into MongoDB.
+:Description: A DSV import tool and ThreadPool framework for MongoDB clients
 :Author: Bryan Reinero <breinero@gmail.com>
 
 Overview 
 ========
 
-Firehose is both a mulithreaded DSV import tool for MongoDB, AND a instrumented execution framework which you can use to benchmark your own applications.
+Firehose is both a mulithreaded DSV import tool for MongoDB, AND an instrumented execution framework which you can use to benchmark your own applications.
 
 Firehose includes these major components:
  - A simple code instrumentation and reporting `library <https://github.com/bryanreinero/Firehose/tree/master/src/main/java/com/bryanreinero/firehose/metrics>`_
@@ -30,7 +30,7 @@ Ok, so I want to read a CSV file and import those records into MongoDB as fast a
 - Parse the line, converting it into a object prepped for insertion
 - Insert the new object into MongoDB
 
-As a curious and conscientious software engineer, I am very interested to know how much time each of these steps take so that I can establish performance baselines. I can use Firehose's instrumentation library to mark the start and end of each step with use of the `Interval class <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ class. For instance, here's how I determine how long and individual insertion takes.
+As a curious and conscientious software engineer, I am very interested to know how much time each of these steps takes so that I can establish performance baselines. I can use Firehose's instrumentation library to mark the start and end of each step with use of the `Interval class <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ class. For instance, here's how I determine how long and individual insertion takes.
 
 ::
 
@@ -82,7 +82,7 @@ You can take a look at how this workload is processed `here <https://github.com/
 Firehose by Example: The DSV Import Command Line Interface
 ----------------------------------------------------------
 
-Under the hood, Firehose uses the `Apache Commons CLI library <http://commons.apache.org/proper/commons-cli/>`_ to parse command line options passed in at runtime. Firehose wraps the Commons CLI into the framework such that we can configure my own set of command line options easily. Using the CLI framework is a two step process.
+Under the hood, Firehose uses the `Apache Commons CLI library <http://commons.apache.org/proper/commons-cli/>`_ to parse command line options passed in at runtime. Firehose wraps the Commons CLI into the framework such that we can configure our own set of command line options easily. Using the CLI framework is a two step process.
 
 1. Declare command line options in a properties file
 #. Assign callback methods to handle the input

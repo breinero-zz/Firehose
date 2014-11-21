@@ -14,7 +14,7 @@
                 "longOpt" : "headers",
                 "name": "name:type",
                 "description": "',' delimited list of columns",
-                "required": "true",
+                "required": false,
                 "args": "multi",
                 "separator": ","
             },

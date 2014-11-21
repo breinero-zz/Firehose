@@ -58,6 +58,19 @@ public class Firehose implements Executor {
 				filename  = values[0];
 				try { 
 					br = new BufferedReader(new FileReader(filename));
+                    // first line defines delimeters and header
+                    // ,:field:type,field:type,..
+					String ln = br.readLine();
+					String colDelim = ln.substring(0,1);
+					String fieldDelim = ln.substring(1,2);
+					String header = ln.substring(2);
+					converter.setDelimiter( colDelim.charAt(0) );
+					for (String column : header.split(colDelim)) {
+						String[] s = column.split(fieldDelim);
+						converter.addField
+                            ( s[0], Transformer.getTransformer( s[1] ) );
+					}
+                
 				}catch (Exception e) {
 					e.printStackTrace();
 					System.exit(-1);
