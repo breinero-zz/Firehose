@@ -1,30 +1,6 @@
 {
-    "Firehose": {
+    "<your app here>": {
         "options": [
-            {
-                "op": "f",
-                "longOpt" : "file",
-                "name": "filepath",
-                "description":"filename to import",
-                "required": true,
-                "args" : 1
-            },
-            {
-                "op": "h",
-                "longOpt" : "headers",
-                "name": "name:type",
-                "description": "',' delimited list of columns",
-                "required": false,
-                "args": "multi",
-                "separator": ","
-            },
-            {
-                "op": "d",
-                "longOpt" : "delimiter",
-                "name": "delimeter",
-                "description": "the value separator used to parse columns. Default ','",
-                "args": 1
-            }
         ]
     },
     "ApplicationFramework" : {
@@ -52,14 +28,16 @@
                 "args": 1
             },
             {
-                "op": "ns",
-                "longOpt" : "namespace",
-                "name": "database.collection",
-                "description": "target database and collection this work will use",
-                "required": true,
-                "args": 2,
-                separator: "."
-                
+                "op": "wj",
+                "longOpt" : "journal",
+                "name": "journal",
+                "description": "enable write concern wait for journal commit"
+            },
+            {
+                "op": "ws",
+                "longOpt" : "fsync",
+                "name": "sync",
+                "description": "enable write concern wait for page flush"
             },
             {
                 "op": "v",
@@ -77,9 +55,9 @@
             },
             {
                 "op": "ri",
-                "longOpt" : "reporti=Interval",
+                "longOpt" : "reportInterval",
                 "name": "interval",
-                "description": "averate stats over an time interval of i milleseconds",
+                "description": "average stats over an time interval of i milleseconds",
                 "args": "1"
             },
             {
@@ -89,49 +67,10 @@
                 "description": "print out in CR-delimited lines. Default is console mode pretty printing, when possible"
             },
             {
-                "op": "j",
-                "longOpt" : "journal",
-                "name": "j",
-                "description": "enable write concern wait for journal commit"
-            },
-            {
-                "op": "fs",
-                "longOpt" : "fsync",
-                "name": "sync",
-                "description": "enable write concern wait for page flush"
-            },
-            {
             	"op": "b",
             	"longOpt": "batch",
             	"args": 1,
             	"description": "Bulk write in batches of n"
-            }
-        ]
-    },
-    "RandomDSVGenerator": {
-        "options": [
-            {
-                "op": "f",
-                "longOpt" : "file",
-                "name": "filepath",
-                "description":"filename to import",
-                "required": true,
-                "args" : 1
-            },
-            {
-                "op": "n",
-                "longOpt" : "lines",
-                "name": "int",
-                "required": true,
-                "args" : 1,
-                "description": "number of lines to write to the csv"
-            },
-            {
-                "op": "d",
-                "longOpt" : "delimiter",
-                "name": "delimeter",
-                "description": "the value separator used to separate columns. Default ','",
-                "args": 1
             }
         ]
     }
