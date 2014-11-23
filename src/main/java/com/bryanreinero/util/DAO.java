@@ -10,13 +10,42 @@ import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
+import com.mongodb.Cursor;
 
 public class DAO {
 
 	private final DBCollection collection;
 
+	public void createIndex ( DBObject object ) {
+		collection.createIndex(object);
+	}
+
 	public WriteResult insert ( DBObject object ) {
 		return collection.insert(object);
+	}
+
+    public WriteResult update( DBObject query , DBObject update , boolean upsert , boolean multi , WriteConcern concern ) {
+        return collection.update(query,update,upsert,multi,concern);
+    }
+
+    public WriteResult update( DBObject query , DBObject update , boolean upsert , boolean multi ) {
+        return collection.update(query,update,upsert,multi);
+    }
+
+    public Cursor find ( DBObject query , DBObject projection, int numToSkip, int batchSize, int options ){
+		return collection.find(query, projection, numToSkip, batchSize, options);
+	}
+
+    public Cursor find ( DBObject query , DBObject projection, int numToSkip, int batchSize ){
+        int options = 0;
+		return find(query, projection, numToSkip, batchSize, options);
+	}
+
+    public Cursor find ( DBObject query , DBObject projection ){
+        int numToSkip = 0;
+        int batchSize = 20;
+        int options = 0;
+		return find(query, projection, numToSkip, batchSize, options);
 	}
 
 	public DAO ( DBCollection collection ) {
