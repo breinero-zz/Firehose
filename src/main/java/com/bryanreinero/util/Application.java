@@ -201,10 +201,8 @@ public class Application {
 				
         dao = new DAO(client.getDB(dbName).getCollection(collectionName));
 
-        if (this.writeConcern != null) {
-            System.out.println("dmf:setting writeConcern:"+writeConcern);
+        if (this.writeConcern != null)
             dao.setConcern(this.writeConcern);
-        }
         if (this.journal)
             dao.setJournal(this.journal);
         if (this.fsync)
