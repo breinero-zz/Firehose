@@ -12,6 +12,8 @@ import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.util.WorkerPool.Executor;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
+import com.mongodb.BasicDBObject;
+import java.net.UnknownHostException;
 
 public class Application {
 	
@@ -20,15 +22,12 @@ public class Application {
 	private final CommandLineInterface cli;
 	private Printer printer = new Printer( DEFAULT_PRINT_INTERVAL );
 	private final SampleSet samples;
-	private DAO dao = null;
 	
 	public static final int DEFAULT_PRINT_INTERVAL = 1;
 	public static final long DEFAULT_REPORTING_INTERVAL = 5;
 	
 	private int numThreads = 1; 
-	private List<ServerAddress> adresses = null;
-	private String collectionName = null;
-	private String dbname = null;
+	private List<ServerAddress> addresses = null;
 	private String writeConcern = null;
 	private boolean journal = false;
 	private boolean fsync = false;
@@ -40,6 +39,7 @@ public class Application {
 				Application w = new Application(executor);
 				
 				w.cli.addOptions(name);
+
 				//add custom callbacks
 				for ( Entry<String, CallBack> e : cbs.entrySet() )
 					w.cli.addCallBack(e.getKey(), e.getValue());
@@ -49,31 +49,16 @@ public class Application {
 					w.cli.parse(args);
 				} catch ( MissingOptionException e) {
 					w.cli.printHelp();
+                    // dmf: this needs work; need to throw more pertinent except
+                    //   unrecognized arg
+                    //   missing arg
+                    //   incorect value
+                    //   etc
 					throw new Exception( "bad options", e );
 				}
 				
-				// Sanity checking
-				if(  w.collectionName == null )
-					throw new IllegalStateException( "Target collection name can't be null");
-				if(  w.dbname == null )
-					throw new IllegalStateException( "Target database name can't be null");
-				
-				MongoClient client;
-				if( w.adresses == null || w.adresses.isEmpty() ) 
-					client = new MongoClient();
-				else
-					client = new MongoClient(w.adresses);
-				
-				w.dao = new DAO( 
-						client.getDB(w.dbname).getCollection(w.collectionName)
-						);
-
-				if(  w.writeConcern != null )
-					w.dao.setConcern(w.writeConcern);
-				if(w.journal) w.dao.setJournal(w.journal);
-				if(w.fsync ) w.dao.setFSync(w.fsync);
-
 				return w;
+
 			} catch ( Exception e )  {
 				throw new Exception( "Can't initialize Worker", e );
 			}
@@ -99,7 +84,11 @@ public class Application {
 		// prep the CLI with a set of 
 		// standard CL option handlers
 		cli = new CommandLineInterface();
+
+		// Add Application options
 		cli.addOptions(appName);
+
+        // Threads
 		cli.addCallBack("t", new CallBack() {
 
 			@Override
@@ -108,6 +97,7 @@ public class Application {
 			}
 		});
 
+        // Report Interval
 		cli.addCallBack("ri", new CallBack() {
 
 			@Override
@@ -116,6 +106,7 @@ public class Application {
 			}
 		});
 
+        // Print Interval
 		cli.addCallBack("pi", new CallBack() {
 
 			@Override
@@ -124,6 +115,7 @@ public class Application {
 			}
 		});
 
+        // No pretty print (carriage return lines output)
 		cli.addCallBack("cr", new CallBack() {
 
 			@Override
@@ -138,23 +130,13 @@ public class Application {
 
 			@Override
 			public void handle(String[] values) {
-				adresses = DAO.getServerAddresses(values);
+				addresses = DAO.getServerAddresses(values);
 
 			}
 
 		});
 
-		// target namespace
-		cli.addCallBack("ns", new CallBack() {
-
-			@Override
-			public void handle(String[] values) {
-				collectionName = values[1];
-				dbname = values[0];
-			}
-
-		});
-
+        // WriteConcern
 		cli.addCallBack("wc", new CallBack() {
 			@Override
 			public void handle(String[] values) {
@@ -163,7 +145,8 @@ public class Application {
 
 		});
 
-		cli.addCallBack("j", new CallBack() {
+        // Write Journal
+		cli.addCallBack("wj", new CallBack() {
 
 			@Override
 			public void handle(String[] values) {
@@ -172,7 +155,8 @@ public class Application {
 
 		});
 
-		cli.addCallBack("fs", new CallBack() {
+        // Write sync
+		cli.addCallBack("ws", new CallBack() {
 
 			@Override
 			public void handle(String[] values) {
@@ -199,11 +183,37 @@ public class Application {
 		return this.numThreads;
 	}
 
-	public DAO getDAO() {
+	public DAO getDAO(String dbName, String collectionName) {
+        MongoClient client;
+        DAO dao = null;
+
+        try {
+            if( this.addresses == null || this.addresses.isEmpty() ) 
+                client = new MongoClient();
+            else
+                client = new MongoClient(this.addresses);
+        } catch (UnknownHostException e) {
+            System.out.println("Application framework caught excpetion: "
+                               +e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+				
+        dao = new DAO(client.getDB(dbName).getCollection(collectionName));
+
+        if (this.writeConcern != null) {
+            System.out.println("dmf:setting writeConcern:"+writeConcern);
+            dao.setConcern(this.writeConcern);
+        }
+        if (this.journal)
+            dao.setJournal(this.journal);
+        if (this.fsync)
+            dao.setFSync(this.fsync);
+
 		return dao;
 	}
 
-	public void addPrinable(Object o) {
+	public void addPrintable(Object o) {
 		printer.addPrintable(o);
 	}
 
