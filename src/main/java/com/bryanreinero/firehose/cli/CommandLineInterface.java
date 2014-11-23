@@ -20,6 +20,7 @@ public class CommandLineInterface {
 
 	private Options options = new Options();
 
+    private String appName = null;
 	private HelpFormatter formatter = new HelpFormatter();
 	private CommandLineParser parser = new GnuParser();
 	
@@ -33,6 +34,7 @@ public class CommandLineInterface {
 	
 	public void addOptions( String appName ) throws Exception  {
 		
+        this.appName = appName;
 		InputStream is = CommandLineInterface.class.getClassLoader().getResourceAsStream("options.json");
 		
 		try {
@@ -49,7 +51,7 @@ public class CommandLineInterface {
 	}
 
 	public void printHelp() {
-		formatter.printHelp("Firehose", options);
+		formatter.printHelp(appName, options);
 	}
 
 	public void parse(String[] args) throws UnknownHostException,
