@@ -4,6 +4,9 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
+import java.util.Date;
 
 import org.bson.types.ObjectId;
 
@@ -21,6 +24,8 @@ public abstract class Transformer <V extends Object> {
     public static final String TYPE_INT = "int";
     public static final String TYPE_FLOAT = "float";
     public static final String TYPE_DOUBLE = "double";
+    public static final String TYPE_BOOLEAN = "boolean";
+    public static final String TYPE_DATE = "date";
     public static final String TYPE_BINARY = "binary";
     
     static {
@@ -102,6 +107,44 @@ public abstract class Transformer <V extends Object> {
                 @Override
                 public String toString() {
                 	return TYPE_DOUBLE;
+                }
+            }
+        );
+
+        transformers.put( TYPE_BOOLEAN ,
+            new Transformer <Boolean> () {
+                @Override
+                public Boolean transform( String value ) {
+                    return new Boolean( value );
+                }
+                
+                @Override
+                public String toString() {
+                	return TYPE_BOOLEAN;
+                }
+            }
+        );
+
+        transformers.put( TYPE_DATE ,
+            new Transformer <Date> () {
+                @Override
+                public Date transform( String value ) {
+                    SimpleDateFormat fmt = new SimpleDateFormat("yyyy.MM.dd");
+                    Date date;
+                    try {
+                        date = fmt.parse(value);
+                        //System.out.println(date);
+                        //System.out.println(fmt.format(date));
+                        return (date);
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                        return (new Date(0));
+                    }
+                }
+                
+                @Override
+                public String toString() {
+                	return TYPE_DATE;
                 }
             }
         );
