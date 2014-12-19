@@ -73,7 +73,13 @@ public abstract class Transformer <V extends Object> {
             new Transformer <Integer> () {
                 @Override
                 public Integer transform( String value ) {
-                    return new Integer( value );
+                    Integer i;
+                    try {
+                        i = new Integer( value );
+                    } catch (NumberFormatException e) {
+                        i = new Integer( 0 );
+                    }
+                    return i;
                 }
 
                 @Override
@@ -87,7 +93,13 @@ public abstract class Transformer <V extends Object> {
             new Transformer <Float> () {
                 @Override
                 public Float transform( String value ) {
-                    return new Float( value );
+                    Float f;
+                    try {
+                        f = new Float( value );
+                    } catch (NumberFormatException e) {
+                        f = new Float( 0 );
+                    }
+                    return f;
                 }
                 
                 @Override
