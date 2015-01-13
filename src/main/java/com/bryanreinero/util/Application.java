@@ -1,6 +1,7 @@
 package com.bryanreinero.util;
 
 import java.util.List;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -11,6 +12,7 @@ import com.bryanreinero.firehose.cli.CommandLineInterface;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.util.WorkerPool.Executor;
 import com.mongodb.MongoClient;
+import com.mongodb.MongoCredential;
 import com.mongodb.ServerAddress;
 import com.mongodb.BasicDBObject;
 import java.net.UnknownHostException;
@@ -28,6 +30,7 @@ public class Application {
 	
 	private int numThreads = 1; 
 	private List<ServerAddress> addresses = null;
+	private String usrpwd = null;
 	private String writeConcern = null;
 	private boolean journal = false;
 	private boolean fsync = false;
@@ -48,6 +51,7 @@ public class Application {
 					// the CLI is ready to parse the command line
 					w.cli.parse(args);
 				} catch ( MissingOptionException e) {
+                    System.out.println("MissingOptionException");
 					w.cli.printHelp();
                     // dmf: this needs work; need to throw more pertinent except
                     //   unrecognized arg
@@ -126,12 +130,22 @@ public class Application {
 		});
 
 		// Mongos'es
-		cli.addCallBack("m", new CallBack() {
+		cli.addCallBack("h", new CallBack() {
 
 			@Override
 			public void handle(String[] values) {
 				addresses = DAO.getServerAddresses(values);
 
+			}
+
+		});
+
+		// User / Password
+		cli.addCallBack("up", new CallBack() {
+
+			@Override
+			public void handle(String[] values) {
+                usrpwd = values[0];
 			}
 
 		});
@@ -188,10 +202,22 @@ public class Application {
         DAO dao = null;
 
         try {
+            // dmf: this code requires host spec to process user/pwd
             if( this.addresses == null || this.addresses.isEmpty() ) 
                 client = new MongoClient();
-            else
-                client = new MongoClient(this.addresses);
+            else {
+                if (this.usrpwd == null)
+                    client = new MongoClient(this.addresses);
+                else {
+                    String[] usrpwda = usrpwd.split(":");
+                    if (usrpwda.length != 2) {
+                        System.out.println("Invalid username and pwd spec:"+usrpwd);
+                        System.exit(1);
+                    }
+                    MongoCredential credential = MongoCredential.createMongoCRCredential(usrpwda[0], dbName, usrpwda[1].toCharArray());
+                    client = new MongoClient(this.addresses, Arrays.asList(credential));
+                }
+            }
         } catch (UnknownHostException e) {
             System.out.println("Application framework caught excpetion: "
                                +e.getMessage());
