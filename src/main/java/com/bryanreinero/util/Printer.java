@@ -52,7 +52,8 @@ public class Printer extends TimerTask {
 	
 	private class Indentor {
 		int indentation = 0;
-		String ident = "    ";
+		String indent = "    ";
+        Boolean inArray = false;
 		public String format(String json ) {
 			
 			
@@ -61,14 +62,20 @@ public class Printer extends TimerTask {
 			json = json.replaceAll("\\s+","").replaceAll(":", ": ");
 			
 			for ( int i = 0; i < json.length(); i++ ){
+
 				char c = json.charAt(i);
 				
+                if( c == '[' )
+                    inArray = true;
+                if ( c == ']' )
+                    inArray = false;
+
 				if ( c == '}' || c == ']' ) {
 					output.append("\n\r");
 					indentation--;
 					
 					for ( int t = 0; t < indentation; t++ )
-						output.append( ident );
+                        output.append( indent );
 				}
 				
 				output.append(c);
@@ -77,10 +84,13 @@ public class Printer extends TimerTask {
 					
 					if( c != ',' )
 						indentation++;
-					output.append("\n\r");
-					
-					for ( int t = 0; t < indentation; t++ )
-						output.append( ident );
+                    if (!inArray || c != ',') {
+                        output.append("\n\r");
+                        for ( int t = 0; t < indentation; t++ )
+                            output.append( indent );
+                    }
+                    else
+                        output.append( "	" );
 				}
 			}
 			return output.toString();
@@ -106,11 +116,11 @@ public class Printer extends TimerTask {
 		String line = buf.toString();
 
 		if ( consoleMode.get() ) {
-			if (cleared.compareAndSet(false, true)) {
-				c.writer().print(ESC + "[2J");
+			//if (cleared.compareAndSet(false, true)) {
+				c.writer().print(ESC + "[2J"); // clear entire screen
 				c.flush();
-			}
-			c.writer().print(ESC + "[1;1H");
+            //}
+			c.writer().print(ESC + "[1;1H"); // move cursor to top left corner
 			c.flush();
 			c.writer().println( id.format( line ) );
 			c.flush();
