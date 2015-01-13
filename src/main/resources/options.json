@@ -6,19 +6,26 @@
     "ApplicationFramework" : {
         "options": [
             {
-                "op": "m",
-                "longOpt" : "mongos",
+                "op": "h",
+                "longOpt" : "hosts",
                 "name": "hostname:port",
-                "description": "',' delimited list of mongodb host to connect to. Default localhost:27017,",
+                "description": "mongodb host, or ',' delimited list of mongos hosts to connect to. Default localhost:27017,",
                 "args": "multi",
                 "separator": ","
+            },
+            {
+                "op": "up",
+                "longOpt" : "usrpwd",
+                "name": "usr:pwd",
+                "description": "username and password; must specify host(s)",
+                "args": 1
             },
             {
                 "op": "t",
                 "longOpt" : "threads",
                 "name": "number",
                 "description": "number of worker threads. Default 1",
-                args: 1
+                "args": 1
             },
             {
                 "op": "wc",
@@ -44,21 +51,21 @@
                 "longOpt" : "verbose",
                 "name": "verbose",
                 "description": "Enabel verbose output",
-                "args": "1"
+                "args": 1
             },
             {
                 "op": "pi",
                 "longOpt" : "printInterval",
                 "name": "interval",
                 "description": "print output every n seconds",
-                "args": "1"
+                "args": 1
             },
             {
                 "op": "ri",
                 "longOpt" : "reportInterval",
                 "name": "interval",
                 "description": "average stats over an time interval of i milleseconds",
-                "args": "1"
+                "args": 1
             },
             {
                 "op": "cr",
