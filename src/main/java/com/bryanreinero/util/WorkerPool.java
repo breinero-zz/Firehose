@@ -13,24 +13,18 @@ public class WorkerPool {
 	private class Worker extends Thread {
 
 		public void run() {
-			try {
-				while (true) {
-					if (!running.get())
-						throw new InterruptedException();
-					executor.execute();
-				}
-			} catch (InterruptedException ex) {
-				Thread.currentThread().interrupt();
-			}
+            while (running.get())
+                executor.execute();
 		}
 	}
 
 	public void stop() {
 		synchronized (running) {
 			running.set(false);
-			for (Worker worker : workers) {
-				worker.interrupt();
-			}
+			// dmf: let 'em finish; they'll figure it out
+			//for (Worker worker : workers) {
+			//	worker.interrupt();
+			//}
 		}
 	}
 

@@ -77,7 +77,7 @@ public class SampleSet {
 	@Override 
 	public String toString() {
 		StringBuffer buf = new StringBuffer("{ units: \"microseconds\"");
-		buf.append(", \"interval\": "+timeToLive+"000, ops: [ ");
+		buf.append(", interval: "+timeToLive+"000, ops: [ ");
 		
 		boolean first = true;
 		for( Entry<String, Aggregate> aggregate : report().entrySet() ) {

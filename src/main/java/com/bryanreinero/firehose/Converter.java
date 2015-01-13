@@ -55,7 +55,8 @@ public class Converter {
 
     public DBObject convert( String line ) {
     	
-    	String[] values = line.split( String.valueOf( delimiter ) );
+    	String[] values = line.split
+            ( String.valueOf ( delimiter+"(?=([^\"]*\"[^\"]*\")*[^\"]*$)" ) );
     	DBObject document = new BasicDBObject();
     	
         if ( values.length != transforms.size() )
@@ -63,12 +64,18 @@ public class Converter {
                         "Number of input fields != "+transforms.size() 
                     );
 
+        // values may be quoted to embed delimiter; strip 'em
+        for ( int i = 0; i < values.length; i++ ) {
+            if (values[i].startsWith("\"") && values[i].endsWith("\"")) {
+                values[i] = values[i].substring(1,values[i].length()-1);
+            }
+        }
+
         for( int i = 0; i < transforms.size(); i++ ) {
         	
             SimpleEntry transformKV = transforms.get(i);
             String fieldName = ((String)transformKV.getKey());
             Object value = ((Transformer)transformKV.getValue()).transform( values[i] );
-            
             nest( document, fieldName.split( fieldNameSeparator ), 0, value );
         }
         return document;
