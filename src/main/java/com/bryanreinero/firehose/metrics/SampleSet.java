@@ -1,11 +1,17 @@
 package com.bryanreinero.firehose.metrics;
 
+import java.lang.management.ManagementFactory;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.management.MBeanServerConnection;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
+import javax.management.MBeanServer;
 
 public class SampleSet {
 	
@@ -40,6 +46,15 @@ public class SampleSet {
 	}
 	
 	public SampleSet(){
+
+		try {
+			ObjectName name = new ObjectName("com.bryanreiner.firehose.metrics:type=Statistics");
+			Statistics mbean = new Statistics( this ); 
+			ManagementFactory.getPlatformMBeanServer().registerMBean(mbean, name); 
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
+        
 		cleanser.start();
 	}
 	
@@ -64,6 +79,21 @@ public class SampleSet {
 	    	aggregate.increment( interval.duration() );
 	    }
 		return aggregates;
+	}
+	
+	public Aggregate report(String metric ) {
+		
+		Aggregate aggregate = new Aggregate();
+		
+		Iterator<Interval> iter = intervals.iterator();
+		
+	    while ( iter.hasNext() ) {
+	    	Interval interval = iter.next();
+	    	if( ! interval.getName().equals( metric ) ) continue;
+	    	
+	    	aggregate.increment( interval.duration() );
+	    }
+		return aggregate;
 	}
 	
 	public Interval set( String name ) {

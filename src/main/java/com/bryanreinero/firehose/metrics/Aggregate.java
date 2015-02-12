@@ -1,6 +1,5 @@
 package com.bryanreinero.firehose.metrics;
 
-import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Aggregate {
