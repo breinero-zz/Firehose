@@ -185,7 +185,8 @@ public class Application {
 	}
 
 	public void start() {
-		workers.start(this.numThreads);
+		workers.setNumThreads(this.numThreads);
+		workers.start();
 		printer.start();
 	}
 	

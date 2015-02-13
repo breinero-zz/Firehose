@@ -54,4 +54,14 @@ public class Statistics implements StatisticsMBean {
 		buf.append("\n}");
 		return buf.toString();
 	}
+
+	@Override
+	public void setReportingInterval( Long milliseconds) {
+		set.setTimeToLive( milliseconds );
+	}
+
+	@Override
+	public Long getReportingInterval() {
+		return set.getTimeToLive();
+	}
 }
