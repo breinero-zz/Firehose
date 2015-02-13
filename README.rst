@@ -79,6 +79,11 @@ This output tells me that inserts are taking an average of 182 microseconds, as 
 
 You can take a look at how this workload is processed `here <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L35>`_
 
+JMX Integration
+---------------
+
+Firehose uses Java Management Extensions (JMX) to make it even easier monitor and manage your application. Firehose exposes Interval data with MBeans so you can gather performance metrics from a remote JMX client such as JConsole. Additionally The worker pool can be stopped, started or resized at will from the remote client without having to restart the application. More information on JMX is available `here <http://www.oracle.com/technetwork/java/javase/tech/javamanagement-140525.html>`_.
+
 Firehose by Example: The DSV Import Command Line Interface
 ----------------------------------------------------------
 
@@ -293,6 +298,7 @@ Additional dependencies are:
     - `MongoDB Java Driver <http://docs.mongodb.org/ecosystem/drivers/java/>`_
     - `JUnit 4 <http://junit.org/>`_
     - `Apache Commons CLI 1.2 <http://commons.apache.org/proper/commons-cli/>`_
+    - `Apache Commons Math 3 3.4 <http://commons.apache.org/proper/commons-math/>`_
 
     
 License
