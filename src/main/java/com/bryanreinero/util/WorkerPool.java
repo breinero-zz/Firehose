@@ -1,10 +1,13 @@
 package com.bryanreinero.util;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class WorkerPool {
+import javax.management.ObjectName;
+
+public class WorkerPool implements WorkerPoolMBean {
 	
 	public interface Executor {
 		public void execute();
@@ -25,6 +28,7 @@ public class WorkerPool {
 		}
 	}
 
+	@Override
 	public void stop() {
 		synchronized (running) {
 			running.set(false);
@@ -33,7 +37,8 @@ public class WorkerPool {
 			}
 		}
 	}
-
+	
+	@Override
 	public void start(int numThreads ) {
 		synchronized (running) {
 			running.set(true);
@@ -46,6 +51,7 @@ public class WorkerPool {
 		}
 	}
 	
+	@Override
 	public int getNumThreads() {
 		return workers.size();
 	}
@@ -56,5 +62,12 @@ public class WorkerPool {
 	
 	public WorkerPool ( Executor executor ) { 
 		this.executor = executor;
+		
+		try {
+			ObjectName name = new ObjectName("com.bryanreiner.firehose.util:type=Workpool"); 
+			ManagementFactory.getPlatformMBeanServer().registerMBean(this, name); 
+		} catch (Exception e) {
+			e.printStackTrace();
+		} 
 	}
 }

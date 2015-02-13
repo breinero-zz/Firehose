@@ -19,4 +19,9 @@ public class Statistics implements StatisticsMBean {
 		buf.append(set.formatStat( set.report(metric) )+"\n}" );
 		return buf.toString();
 	}
+
+	@Override
+	public void setReportingInterval( Long milliseconds) {
+		set.setTimeToLive( milliseconds );
+	}
 }
