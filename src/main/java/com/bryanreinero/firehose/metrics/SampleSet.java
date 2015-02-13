@@ -4,7 +4,6 @@ import java.lang.management.ManagementFactory;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Map.Entry;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -100,37 +99,5 @@ public class SampleSet {
 
 	void add(Interval interval) {
 		intervals.add(interval);
-	}
-	
-	public static String formatStat( DescriptiveStatistics stat ) {
-		StringBuffer buf = new StringBuffer("{\n");
-		buf.append("\tmean: "+stat.getMean()+", \n");
-        buf.append("\tmedian: "+stat.getPercentile(50)+", \n");
-        buf.append("\tstd: "+stat.getStandardDeviation()+", \n");
-        buf.append("\tcount: "+stat.getN()+", \n");
-        buf.append("\ttotal: "+stat.getSum());
-        buf.append("}");
-		return buf.toString();
-	}
-	
-	
-	@Override 
-	public String toString() {
-		StringBuffer buf = new StringBuffer("{ units: \"microseconds\"\n");
-		buf.append(", \"interval\": "+timeToLive+"000, \n");
-		
-		boolean first = true;
-		for( Entry<String, DescriptiveStatistics> aggregate : report().entrySet() ) {
-			if( !first )
-				buf.append(", ");
-			else
-				first = false;
-			DescriptiveStatistics stat = aggregate.getValue();
-			buf.append("name: \""+ formatStat( stat ) );
-		}
-		
-		buf.append("\n }");
-		
-		return buf.toString();
 	}
 }
