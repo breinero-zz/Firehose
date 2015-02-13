@@ -24,4 +24,9 @@ public class Statistics implements StatisticsMBean {
 	public void setReportingInterval( Long milliseconds) {
 		set.setTimeToLive( milliseconds );
 	}
+
+	@Override
+	public Long getReportingInterval() {
+		return set.getTimeToLive();
+	}
 }

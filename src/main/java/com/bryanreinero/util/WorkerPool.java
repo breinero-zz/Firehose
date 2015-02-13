@@ -39,8 +39,8 @@ public class WorkerPool implements WorkerPoolMBean {
 	}
 	
 	@Override
-	public void start(int numThreads ) {
-		synchronized (running) {
+	public void start() {
+		synchronized (running ) {
 			running.set(true);
 
 			for (int i = 0; i < numThreads; i++) {
@@ -55,10 +55,20 @@ public class WorkerPool implements WorkerPoolMBean {
 	public int getNumThreads() {
 		return workers.size();
 	}
+	
+	@Override
+	public void setNumThreads( int count ) {
+		this.numThreads = count;
+		if( running.get() ) {
+			stop();
+			start();
+		}
+	}
 
 	private final Executor executor;
 	private List<Worker> workers = new ArrayList<Worker>();
 	private AtomicBoolean running = new AtomicBoolean(false);
+	private int numThreads = 1;
 	
 	public WorkerPool ( Executor executor ) { 
 		this.executor = executor;
