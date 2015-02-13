@@ -8,10 +8,9 @@ import java.util.Map.Entry;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.management.MBeanServerConnection;
-import javax.management.MalformedObjectNameException;
 import javax.management.ObjectName;
-import javax.management.MBeanServer;
+
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 public class SampleSet {
 	
@@ -62,28 +61,27 @@ public class SampleSet {
 		running.set(false);
 	}
 	
-	public Map<String, Aggregate> report() {
+	public Map<String, DescriptiveStatistics> report() {
 		
-		Map<String, Aggregate> aggregates = new HashMap<String, Aggregate>();
+		Map<String, DescriptiveStatistics> stats = new HashMap<String, DescriptiveStatistics>();
 		
 		Iterator<Interval> iter = intervals.iterator();
 	    while ( iter.hasNext() ) {
 	    	
 	    	Interval interval = iter.next();
-	    	Aggregate aggregate;
+	    	DescriptiveStatistics stat;
 	    	
-	    	if( ( aggregate = aggregates.get( interval.getName() ) ) == null ) {
-	    		aggregate = new Aggregate();
-	    		aggregates.put( interval.getName(), aggregate );
-			}
-	    	aggregate.increment( interval.duration() );
+	    	if( ( stat = stats.get( interval.getName() ) ) == null ) 
+	    		stats.put( interval.getName(), (stat = new DescriptiveStatistics() ) );
+	
+	    	stat.addValue( interval.duration() );
 	    }
-		return aggregates;
+		return stats;
 	}
 	
-	public Aggregate report(String metric ) {
+	public DescriptiveStatistics report( String metric ) {
 		
-		Aggregate aggregate = new Aggregate();
+		DescriptiveStatistics stat = new DescriptiveStatistics();
 		
 		Iterator<Interval> iter = intervals.iterator();
 		
@@ -91,9 +89,9 @@ public class SampleSet {
 	    	Interval interval = iter.next();
 	    	if( ! interval.getName().equals( metric ) ) continue;
 	    	
-	    	aggregate.increment( interval.duration() );
+	    	stat.addValue( interval.duration() );
 	    }
-		return aggregate;
+		return stat;
 	}
 	
 	public Interval set( String name ) {
@@ -104,25 +102,34 @@ public class SampleSet {
 		intervals.add(interval);
 	}
 	
+	public static String formatStat( DescriptiveStatistics stat ) {
+		StringBuffer buf = new StringBuffer("{\n");
+		buf.append("\tmean: "+stat.getMean()+", \n");
+        buf.append("\tmedian: "+stat.getPercentile(50)+", \n");
+        buf.append("\tstd: "+stat.getStandardDeviation()+", \n");
+        buf.append("\tcount: "+stat.getN()+", \n");
+        buf.append("\ttotal: "+stat.getSum());
+        buf.append("}");
+		return buf.toString();
+	}
+	
+	
 	@Override 
 	public String toString() {
-		StringBuffer buf = new StringBuffer("{ units: \"microseconds\"");
-		buf.append(", \"interval\": "+timeToLive+"000, ops: [ ");
+		StringBuffer buf = new StringBuffer("{ units: \"microseconds\"\n");
+		buf.append(", \"interval\": "+timeToLive+"000, \n");
 		
 		boolean first = true;
-		for( Entry<String, Aggregate> aggregate : report().entrySet() ) {
+		for( Entry<String, DescriptiveStatistics> aggregate : report().entrySet() ) {
 			if( !first )
 				buf.append(", ");
 			else
 				first = false;
-			Aggregate agg = aggregate.getValue();
-			buf.append("{ name: \""+aggregate.getKey()+"\", "+
-				"count: "+agg.getCount()+", "
-				+"average: "+agg.average()+" }"
-			);
+			DescriptiveStatistics stat = aggregate.getValue();
+			buf.append("name: \""+ formatStat( stat ) );
 		}
 		
-		buf.append("] }");
+		buf.append("\n }");
 		
 		return buf.toString();
 	}
