@@ -137,15 +137,15 @@ public class Converter {
     
     public static void main( String[] args ) {
     	
-    	String testString = "98,42,bryan,\"Magre,thea\",5676";
+    	String testString = "37.5,-122.2,Slartibartfast,\"Magrethea, Center of\",5676";
 
     	Map<String, String> header = new LinkedHashMap<String, String>();
     	
-    	header.put("root.scores.$1", Transformer.TYPE_INT );
-    	header.put("root.scores.$0", Transformer.TYPE_INT );
-    	header.put("root.user.name", Transformer.TYPE_STRING );
-    	header.put("root.user.address", Transformer.TYPE_STRING );
-    	header.put("root.user.id", Transformer.TYPE_INT );
+    	header.put("geometry.coordinates.$1", Transformer.TYPE_DOUBLE );
+    	header.put("geometry.coordinates.$0", Transformer.TYPE_DOUBLE );
+    	header.put("user.name", Transformer.TYPE_STRING );
+    	header.put("user.address", Transformer.TYPE_STRING );
+    	header.put("_id", Transformer.TYPE_INT );
     	Converter c = new Converter(header, "(?!\\B\"[^\"]*),(?![^\"]*\"\\B)" );
     	DBObject obj =  c.convert( testString ) ;
     	
