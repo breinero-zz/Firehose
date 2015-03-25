@@ -44,38 +44,44 @@ Firehose pretty prints this output, ( refreshing the console each second)
 
 ::
 
- {
-    threads: 2,
-    "linesread": 100000,
+ { 
+    threads: 2, 
+    "lines read": 100000, 
     samples: {
         units: "microseconds",
-        "interval": 1000000,
-        ops: [
-            {
-                name: "total",
-                count: 7926,
-                average: 250
-            },
-            {
-                name: "readline",
-                count: 7926,
-                average: 1
-            },
-            {
-                name: "insert",
-                count: 7926,
-                average: 182
-            },
-            {
-                name: "build",
-                count: 7924,
-                average: 3
-            }
-        ]
-    }
+        "reporting interval ms": 5,
+        total: {
+            mean: 221.32, 
+            median: 181.5, 
+            std: 82.68293015354203, 
+            count: 50, 
+            total: 11066.0
+        },
+        readline: {
+            mean: 4.160000000000002, 
+            median: 1.0, 
+            std: 14.412806097073416, 
+            count: 50, 
+            total: 208.0
+        },
+        build: {
+            mean: 14.291666666666666, 
+            median: 15.0, 
+            std: 3.439188012365297, 
+            count: 48, 
+            total: 686.0
+        },
+        insert: {
+            mean: 170.28571428571428, 
+            median: 158.0, 
+            std: 39.36368885152915, 
+            count: 49, 
+            total: 8344.0
+        }
+    } 
  }
 
-This output tells me that inserts are taking an average of 182 microseconds, as averaged over a time interval of 1000000 microseconds, (1 second). During this 1 second interval I inserted 7926 documents. As the output is printed in JSON format I can insert these stats into MongoDB for benchmarking analysis!
+This output tells me that inserts are taking an average of 170 microseconds, as averaged over a time interval of 5 milliseconds. During this interval I inserted 8344 documents. As the output is printed in JSON format I can insert these stats into MongoDB for benchmarking analysis!
 
 You can take a look at how this workload is processed `here <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L35>`_
 
