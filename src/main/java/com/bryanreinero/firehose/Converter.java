@@ -14,7 +14,7 @@ import com.mongodb.BasicDBObject;
 
 public class Converter {
 	
-	private char delimiter = ',';
+	private String delimiter = ",";
 	
 	private static final String fieldNameSeparator = "\\.";
 	private static final Pattern arrayElemPosition = Pattern.compile( "^\\$\\d+$" );
@@ -24,11 +24,11 @@ public class Converter {
     
     public Converter(){};
 
-    public void setDelimiter(char delimiter) {
+    public void setDelimiter(String delimiter) {
 		this.delimiter = delimiter;
 	}
 
-	public Converter ( Map<String, String> header, char delimiter ) {
+	public Converter ( Map<String, String> header, String delimiter ) {
         
         this.delimiter = delimiter;
 
@@ -128,6 +128,8 @@ public class Converter {
     }
     
     public static void main( String[] args ) {
+    	
+    	String testString = "98,42,bryan,\"Magre,thea\",5676";
 
     	Map<String, String> header = new LinkedHashMap<String, String>();
     	
@@ -136,8 +138,10 @@ public class Converter {
     	header.put("root.user.name", Transformer.TYPE_STRING );
     	header.put("root.user.address", Transformer.TYPE_STRING );
     	header.put("root.user.id", Transformer.TYPE_INT );
-    	Converter c = new Converter(header, ',' );
-    	DBObject obj =  c.convert("98,42,bryan,Magrethea,5676") ;
+    	Converter c = new Converter(header, "(?!\\B\"[^\"]*),(?![^\"]*\"\\B)" );
+    	DBObject obj =  c.convert( testString ) ;
+    	
+    	
     	System.out.println( obj );
     }
 }
