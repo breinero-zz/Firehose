@@ -10,6 +10,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
+import com.bryanreinero.firehose.metrics.Statistics;
 import com.bryanreinero.util.DAO;
 import com.bryanreinero.util.Application;
 import com.bryanreinero.util.WorkerPool.Executor;
@@ -20,6 +21,7 @@ public class Firehose implements Executor {
 	private static final String appName = "Firehose";
 	private final Application worker;
 	private final SampleSet samples;
+	private final Statistics stats;
 	private AtomicInteger linesRead = new AtomicInteger(0);
 	private Converter converter = new Converter();
 	private BufferedReader br = null;
@@ -69,6 +71,7 @@ public class Firehose implements Executor {
 		worker = Application.ApplicationFactory.getApplication( appName, this, args,
 				myCallBacks);
 		samples = worker.getSampleSet();
+		stats = new Statistics( samples );
 		dao = worker.getDAO();
 		worker.addPrinable(this);
 		worker.start();
@@ -125,7 +128,7 @@ public class Firehose implements Executor {
 		StringBuffer buf = new StringBuffer("{ ");
 		buf.append("threads: "+worker.getNumThreads() );
 		buf.append(", \"lines read\": "+ this.linesRead );
-		buf.append(", samples: "+ samples );
+		buf.append(", samples: "+ stats.report() );
 		
 		if( verbose ) {
 			buf.append(", converter: "+converter);
