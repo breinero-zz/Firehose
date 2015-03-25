@@ -17,7 +17,7 @@ public class Converter {
 	private String delimiter = ",";
 	
 	private static final String fieldNameSeparator = "\\.";
-	private static final Pattern arrayElemPosition = Pattern.compile( "^\\$\\d+$" );
+	private static final Pattern arrayElemPosition = Pattern.compile( "^\\$(\\d+)$" );
 
     private final List<SimpleEntry<String, Transformer>> transforms
         = new ArrayList<SimpleEntry<String, Transformer>>();
@@ -101,8 +101,16 @@ public class Converter {
     		// check if this is an array element
     		m = arrayElemPosition.matcher( name );
     		if ( object instanceof ArrayList  && m.matches() ) {
+    			
+    			ArrayList array = ((ArrayList)object);
+    		
+    			// frontfill if we are getting array elements out of order
+    			Integer index = Integer.parseInt(m.group(1));
+    			while ( index >= array.size() )
+    				array.add(null);
+    		
     			// value is an array element 
-    			((ArrayList)object).add(value);
+    			array.set(index, value);
     		}
     		else {
     			((DBObject)object).put( name, value);
@@ -133,8 +141,8 @@ public class Converter {
 
     	Map<String, String> header = new LinkedHashMap<String, String>();
     	
-    	header.put("root.scores.$0", Transformer.TYPE_INT );
     	header.put("root.scores.$1", Transformer.TYPE_INT );
+    	header.put("root.scores.$0", Transformer.TYPE_INT );
     	header.put("root.user.name", Transformer.TYPE_STRING );
     	header.put("root.user.address", Transformer.TYPE_STRING );
     	header.put("root.user.id", Transformer.TYPE_INT );
