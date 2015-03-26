@@ -81,7 +81,7 @@ Firehose pretty prints this output, ( refreshing the console each second)
     } 
  }
 
-This output tells me that inserts are taking an average of 170 microseconds, as averaged over a time interval of 5 milliseconds. During this interval I inserted 8344 documents. As the output is printed in JSON format I can insert these stats into MongoDB for benchmarking analysis!
+This output tells me that inserts are taking an average of 170 microseconds, as averaged over a time interval of 5 milliseconds. During this interval I inserted 49 documents. As the output is printed in JSON format I can insert these stats into MongoDB for benchmarking analysis!
 
 You can take a look at how this workload is processed `here <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L35>`_
 
