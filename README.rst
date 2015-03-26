@@ -2,7 +2,7 @@
 Firehose
 ========
 
-:Description: A tool import for DSV files into MongoDB.
+:Description: A MongoDB focused application toolkit
 :Author: Bryan Reinero <breinero@gmail.com>
 
 Overview 
