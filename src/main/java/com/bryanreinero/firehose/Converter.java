@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import com.bryanreinero.firehose.Transformer.Type;
 import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
 
@@ -74,7 +75,12 @@ public class Converter {
         return document;
     }
     
-    private void nest( Object object, String[] prefix, int i, Object value ) {
+    public static void convert( Map<String, Object> document, String name, Type type, String value ) {	
+    	Object v = Transformer.getTransformer(type.getName()).transform(value);
+        nest( document, name.split( fieldNameSeparator ), 0, v );
+    }
+    
+    private static void nest( Object object, String[] prefix, int i, Object value ) {
     	String name = prefix[i];
     	Matcher m;
     	
@@ -151,5 +157,14 @@ public class Converter {
     	
     	
     	System.out.println( obj );
+    	
+    	
+    	Map<String, Object> someDoc = new BasicDBObject();
+    	Converter.convert(someDoc, "geometry.coordinates.$1", Type.getType("double"), "37.5" );
+    	Converter.convert(someDoc, "geometry.coordinates.$0", Type.getType("double"), "-122.2" );
+    	Converter.convert(someDoc, "user.name", Type.getType("string"), "Slartibartfast" );
+    	Converter.convert(someDoc, "user.address", Type.getType("string"), "\"Magrethea, Center of\"" );
+    	Converter.convert(someDoc, "_id", Type.getType("int"), "5676" );
+    	System.out.println(someDoc);
     }
 }

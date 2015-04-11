@@ -23,6 +23,36 @@ public abstract class Transformer <V extends Object> {
     public static final String TYPE_DOUBLE = "double";
     public static final String TYPE_BINARY = "binary";
     
+    
+    public static enum Type {
+    	Object_Id(TYPE_OBJECT_ID), 
+    	StringType(TYPE_STRING), 
+    	IntType(TYPE_INT), 
+    	FloatType(TYPE_FLOAT),
+    	DoubleType(TYPE_DOUBLE),
+    	BinaryType(TYPE_BINARY);
+    	
+    	private final String name; 
+    	private Type ( String name ) { this.name = name; }  
+    	public String getName() { return name; }
+    	
+    	public static Type getType( String type ) {
+    		if( type.compareTo(TYPE_OBJECT_ID) == 0 )
+    			return Object_Id;
+    		if( type.compareTo(TYPE_STRING) == 0 )
+    			return StringType;
+    		if( type.compareTo(TYPE_INT) == 0 )
+    			return IntType;
+    		if( type.compareTo(TYPE_FLOAT) == 0 )
+        			return FloatType;
+    		if( type.compareTo(TYPE_DOUBLE) == 0 )
+    			return DoubleType;
+    		if( type.compareTo(TYPE_BINARY) == 0 )
+    			return BinaryType;
+    		return null;
+    	}
+    }
+    
     static {
         transformers = new HashMap<String, Transformer>();
 
