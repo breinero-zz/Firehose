@@ -41,8 +41,9 @@ public class Application {
 				
 				w.cli.addOptions(name);
 				//add custom callbacks
-				for ( Entry<String, CallBack> e : cbs.entrySet() )
-					w.cli.addCallBack(e.getKey(), e.getValue());
+				if( cbs != null && ! cbs.isEmpty() ) 
+					for ( Entry<String, CallBack> e : cbs.entrySet() )
+						w.cli.addCallBack(e.getKey(), e.getValue());
 				
 				try { 
 					// the CLI is ready to parse the command line
