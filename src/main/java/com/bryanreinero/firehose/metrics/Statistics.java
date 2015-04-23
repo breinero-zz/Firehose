@@ -1,6 +1,5 @@
 package com.bryanreinero.firehose.metrics;
 
-import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;

@@ -76,8 +76,12 @@ public class Converter {
     }
     
     public static void convert( Map<String, Object> document, String name, Type type, String value ) {	
+    	try {
     	Object v = Transformer.getTransformer(type.getName()).transform(value);
         nest( document, name.split( fieldNameSeparator ), 0, v );
+    	}	catch ( NumberFormatException e ) {
+    		throw new IllegalArgumentException( "Field "+name+" should be of type "+type, e );
+    	}
     }
     
     private static void nest( Object object, String[] prefix, int i, Object value ) {

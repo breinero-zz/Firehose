@@ -16,21 +16,24 @@ public abstract class Transformer <V extends Object> {
     private Transformer(){};
     
     // TODO: Make support all BSON types 
+    public static final String Type_Array = "array";
     public static final String TYPE_OBJECT_ID = "objectid";
     public static final String TYPE_STRING = "string";
     public static final String TYPE_INT = "int";
     public static final String TYPE_FLOAT = "float";
     public static final String TYPE_DOUBLE = "double";
     public static final String TYPE_BINARY = "binary";
-    
+    public static final String TYPE_Object = "object";
     
     public static enum Type {
+    	ArrayType( Type_Array ),
     	Object_Id(TYPE_OBJECT_ID), 
     	StringType(TYPE_STRING), 
     	IntType(TYPE_INT), 
     	FloatType(TYPE_FLOAT),
     	DoubleType(TYPE_DOUBLE),
-    	BinaryType(TYPE_BINARY);
+    	BinaryType(TYPE_BINARY),
+    	ObjectType(TYPE_Object);
     	
     	private final String name; 
     	private Type ( String name ) { this.name = name; }  
@@ -48,6 +51,8 @@ public abstract class Transformer <V extends Object> {
     		if( type.compareTo(TYPE_DOUBLE) == 0 )
     			return DoubleType;
     		if( type.compareTo(TYPE_BINARY) == 0 )
+    			return BinaryType;
+    		if( type.compareTo(TYPE_Object) == 0 )
     			return BinaryType;
     		return null;
     	}
