@@ -8,13 +8,15 @@ Firehose
 Overview 
 ========
 
-Firehose is both a mulithreaded DSV import tool for MongoDB, AND a instrumented execution framework which you can use to benchmark your own applications.
+Firehose is a instrumented, multithreaded execution framework which you can use to benchmark your own applications. It allows you to do sophistated testing easily.
 
 Firehose includes these major components:
  - A simple code instrumentation and reporting `library <https://github.com/bryanreinero/Firehose/tree/master/src/main/java/com/bryanreinero/firehose/metrics>`_
  - A customizable command line interface `builder <https://github.com/bryanreinero/Firehose/tree/master/src/main/java/com/bryanreinero/firehose/cli>`_
  - A multithreaded `worker pool <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java>`_
  - An application `framework <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java>`_ so that you may use all of these components together for your own load testing purposes 
+ 
+You can use Firehose to generate custom load by providing a class which implements the `Executor interface<https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L12>`. Firehose calls this Executor's execute method to do a single unit of work. An example implementation is available `here<https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L81>`, which loads a single line of a csv file into MongoDB.
 
 The Main Take Away
 ~~~~~~~~~~~~~~~~~~
