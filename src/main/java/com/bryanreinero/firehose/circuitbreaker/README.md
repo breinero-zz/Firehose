@@ -20,7 +20,7 @@ There are currently three implementations of the threshold interface
 - OpsPerSecond
 - ConcurrentOperations
 
-Each of these immutible implementations of Threshold are initialized with a threshold value, which is used to trip the containing breaker when that value is exceded.
+Each of these immutable implementations of Threshold are initialized with a threshold value, which is used to trip the containing breaker when that value is exceeded.
 
 ####Trigger Conditions
 - Latency Class `stats.getMean() >= max `
@@ -29,7 +29,7 @@ Each of these immutible implementations of Threshold are initialized with a thre
 
 ##JMX Integration 
 
-An application's set of curcuit breakers can be reset or have their thresholds changed via the `CircuitBreakerMBean` interface and the JMX server. 
+An application's set of circuit breakers can be reset or have their thresholds changed via the `CircuitBreakerMBean` interface and the JMX server. 
 
 ###BreakerBox as JSON
 ```
