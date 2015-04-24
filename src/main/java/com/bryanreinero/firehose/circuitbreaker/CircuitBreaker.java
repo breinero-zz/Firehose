@@ -24,7 +24,8 @@ public class CircuitBreaker {
 		for( Threshold t : tresholds.values() ) {
 			if( t.isExceeded( samples.report( key ) ) ) {
 				isTripped.set(true);
-				return;
+				//TODO need to log here that the cicuit is tripped
+				break;
 			}
 		}
 	}
