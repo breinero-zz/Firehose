@@ -5,13 +5,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
-
 import com.bryanreinero.firehose.metrics.SampleSet;
 
 public class BreakerBox {
-	public static Logger logger = LogManager.getLogger( BreakerBox.class.getName() );
+	
 	private final Map<String, CircuitBreaker> breakers = new ConcurrentHashMap<String, CircuitBreaker>();
 	private final SampleSet samples;
 	
