@@ -16,7 +16,7 @@ Firehose includes these major components:
  - A multithreaded `worker pool <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java>`_
  - An application `framework <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java>`_ so that you may use all of these components together for your own load testing purposes 
  
-You can use Firehose to generate custom load by providing a class which implements the `Executor interface<https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L12>`_ . Firehose calls this Executor's execute method to do a single unit of work. An example implementation is available `here<https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L81>`_, which loads a single line of a csv file into MongoDB.
+You can use Firehose to generate custom load by providing a class which implements the `Executor interface <https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L12>`_ Firehose calls this Executor's execute method to do a single unit of work. Take a look at the `DSV import class <https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L81>`_ to see an example implementation. 
 
 The Main Take Away
 ~~~~~~~~~~~~~~~~~~
@@ -90,7 +90,7 @@ You can take a look at how this workload is processed `here <https://github.com/
 JMX Integration
 ---------------
 
-Firehose uses Java Management Extensions (JMX) to make it even easier monitor and manage your application. Firehose exposes Interval data with MBeans so you can gather performance metrics from a remote JMX client such as JConsole. Additionally The worker pool can be stopped, started or resized at will from the remote client without having to restart the application. More information on JMX is available `here <http://www.oracle.com/technetwork/java/javase/tech/javamanagement-140525.html>`_.
+Firehose uses Java Management Extensions (JMX) to make it even easier monitor and manage your application. Firehose exposes Interval data with MBeans so you can gather performance metrics from a remote JMX client such as JConsole. Additionally The worker pool can be stopped, started or resized at will from the remote client without having to restart the application. More information on JMX is available `in the documentation <http://www.oracle.com/technetwork/java/javase/tech/javamanagement-140525.html>`_.
 
 Firehose by Example: The DSV Import Command Line Interface
 ----------------------------------------------------------
