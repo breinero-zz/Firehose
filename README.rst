@@ -16,7 +16,7 @@ Firehose includes these major components:
  - A multithreaded `worker pool <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java>`_
  - An application `framework <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java>`_ so that you may use all of these components together for your own load testing purposes 
  
-You can use Firehose to generate custom load by providing a class which implements the `Executor interface<https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L12>`. Firehose calls this Executor's execute method to do a single unit of work. An example implementation is available `here<https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L81>`, which loads a single line of a csv file into MongoDB.
+You can use Firehose to generate custom load by providing a class which implements the `Executor interface<https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L12>`_ . Firehose calls this Executor's execute method to do a single unit of work. An example implementation is available `here<https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L81>`_, which loads a single line of a csv file into MongoDB.
 
 The Main Take Away
 ~~~~~~~~~~~~~~~~~~
