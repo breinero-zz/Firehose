@@ -43,24 +43,4 @@ public class BreakerMBean implements CircuitBreakerMBean {
 	public void resetBreaker(String name) {
 		box.reset(name);
 	}
-	
-	public static void main ( String[] args ) {
-		SampleSet samples = new SampleSet();
-		BreakerBox box = new BreakerBox( samples );
-		BreakerMBean mbean = new BreakerMBean(box);
-		
-		mbean.setBreaker("inky", BreakerType.latency.toString(), 1000d);
-		mbean.setBreaker("inky", BreakerType.opsPerSec.toString(), 5000d);
-		mbean.setBreaker("inky", BreakerType.concurrency.toString(), 50d);
-		
-		mbean.setBreaker("dinky", BreakerType.latency.toString(), 1000d);
-		mbean.setBreaker("dinky", BreakerType.concurrency.toString(), 50d);
-		
-		mbean.setBreaker("doo", BreakerType.latency.toString(), 1000d);
-		mbean.setBreaker("doo", BreakerType.opsPerSec.toString(), 5000d);
-		mbean.setBreaker("doo", BreakerType.concurrency.toString(), 50d);
-		
-		System.out.println( mbean.report() );
-		
-	}
 }
