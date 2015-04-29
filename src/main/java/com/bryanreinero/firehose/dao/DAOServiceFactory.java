@@ -14,6 +14,7 @@ import com.mongodb.MongoClient;
 import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.util.JSON;
+import com.mongodb.util.JSONParseException;
 
 public class DAOServiceFactory {
 	
@@ -21,7 +22,12 @@ public class DAOServiceFactory {
 	public static DataAccessHub getDataAccessHub(String json, SampleSet set)
 			throws DAOException {
 
-		DBObject object = (DBObject) JSON.parse(json);
+		DBObject object = null;
+		try {
+			object = (DBObject) JSON.parse(json);
+		} catch ( JSONParseException e ) {
+			throw new DAOException( "Building DataAccessHub failed.", e);
+		}
 		DataAccessHub hub = new DataAccessHub(set);
 
 		for (Map<String, Object> clusterSpec : (List<Map<String, Object>>) object
@@ -102,7 +108,9 @@ public class DAOServiceFactory {
 		hub.setDataAccessObject(name, dao);
 	}
 	
-	private static void setWriteConcerns( Map<String, Object> wc, MongoDAO dao ){}
+	private static void setWriteConcerns( Map<String, Object> concern, MongoDAO dao ) {
+		dao.setW( concern.get("w").toString() );
+	}
 	
 	private static void setReadPreferences( Map<String, Object> rp, MongoDAO dao ) {
 		DBObject tags = (DBObject)rp.get( "tags" );

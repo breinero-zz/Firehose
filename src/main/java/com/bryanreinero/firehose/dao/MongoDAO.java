@@ -32,6 +32,9 @@ public abstract class MongoDAO implements DataAccessObject {
 		String[] nameSpaceArray = namespace.split("\\.");
 		db = client.getDB(nameSpaceArray[0]);
 		collection = db.getCollection(nameSpaceArray[1]);
+		
+		wc = new WriteConcern();
+		rp = ReadPreference.primary();
 	}
 
 	@Override
@@ -134,8 +137,5 @@ public abstract class MongoDAO implements DataAccessObject {
 	}
 
 	@Override
-	public Object execute(Map<String, Object> request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public abstract Object execute(Map<String, Object> request) throws DAOException;
 }
