@@ -1,12 +1,15 @@
 package com.bryanreinero.firehose.dao;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.mongodb.DBObject;
@@ -18,6 +21,8 @@ import com.mongodb.util.JSONParseException;
 
 public class DAOServiceFactory {
 	
+	public static Logger logger = LogManager.getLogger( DAOServiceFactory.class.getName() ); 
+	
 	@SuppressWarnings("unchecked")
 	public static DataAccessHub getDataAccessHub(String json, SampleSet set)
 			throws DAOException {
@@ -26,6 +31,7 @@ public class DAOServiceFactory {
 		try {
 			object = (DBObject) JSON.parse(json);
 		} catch ( JSONParseException e ) {
+			logger.warn("Can't build DataAccessHub. Trouble parsing JSON configuration."+e.getMessage() ); 
 			throw new DAOException( "Building DataAccessHub failed.", e);
 		}
 		DataAccessHub hub = new DataAccessHub(set);
