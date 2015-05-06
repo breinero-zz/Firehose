@@ -14,14 +14,11 @@ Firehose includes these major components:
  - A simple code instrumentation and reporting `library <https://github.com/bryanreinero/Firehose/tree/master/src/main/java/com/bryanreinero/firehose/metrics>`_
  - A customizable command line interface `builder <https://github.com/bryanreinero/Firehose/tree/master/src/main/java/com/bryanreinero/firehose/cli>`_
  - A multithreaded `worker pool <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java>`_
- - An application `framework <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java>`_ so that you may use all of these components together for your own load testing purposes 
+ - An application `framework <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java>`_ so that you may use all of these components together for your own load testing purposes
+- NEW! `Circuit Breaker <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/circuitbreaker>`_ package to protect staturation conditions
  
-You can use Firehose to generate custom load by providing a class which implements the `Executor interface <https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L12>`_ Firehose calls this Executor's execute method to do a single unit of work. Take a look at the `DSV import class <https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L81>`_ to see an example implementation. 
+You can use Firehose to generate custom load simply by providing a class which implements the `Executor interface <https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L12>`_ Firehose calls this Executor's execute method to do a single unit of work. Take a look at the `DSV import class <https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L81>`_ to see an example implementation. 
 
-The Main Take Away
-~~~~~~~~~~~~~~~~~~
-
-While Firehose does include a DSV import tool, that functionality is actually just an example application which uses all of the components together to do useful work. Let's take a closer look at the import tool to understand how you might want to use Firehose's features.
 
 Firehose by Example: The DSV Import Tool
 ----------------------------------------
@@ -278,6 +275,12 @@ The Application class' constructor takes 3 parameters
     #. A list of custom command line callbacks
 
 Bingo. I'm ready to rock and roll. Notice that the 'this' in the first parameter refers to an instance of the Firehose class, which implements Executable. The overridden `execute() <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ method is where all the work is done. 
+
+Circuit Breaker Package
+----------------------- 
+Firehose's circuit breakers watch for trigger conditions that trip the breaker automatically. This protects both the downstream server from overwhelming surges in load and the requesting client who has the circuit breaker. This is because once the circuit breaker has been tripped, the client application can respond appropriately. As opposed to simply hanging on its own pending requests to complete while the inbound load exhausts stack, heap, CPU or other resources.
+
+More detail is available `here <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/circuitbreaker>`_
 
 Build and Quickly Test Firehose
 -------------------------------
