@@ -1,7 +1,7 @@
 package com.bryanreinero.firehose.dao;
 
 import java.lang.reflect.Constructor;
-
+import java.lang.reflect.InvocationTargetException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -93,11 +93,25 @@ public class DAOServiceFactory {
 		if( ( cluster = hub.getCluster( clusterName ) ) == null )
 			throw new DAOException("Error during DAO configuration. Referencing undefined cluster "+clusterName );
 		
+		Constructor<?> c = null;
 		try {
-			Constructor<?> c = Class.forName(className).getConstructor( MongoClient.class, String.class );
+			c = Class.forName(className).getConstructor( MongoClient.class, String.class );
+		} catch (NoSuchMethodException e ) {
+			logger.warn( "Error building dao "+name+". "+e.getMessage() );
+			throw new DAOException ( "Error building dao "+name, e );
+		} catch ( SecurityException e ) {
+			logger.warn( "Error building dao "+name+". "+e.getMessage() );
+			throw new DAOException ( "Error building dao "+name, e );
+		} catch ( ClassNotFoundException e ) {
+			logger.warn( "Error building dao "+name+". "+e.getMessage() );
+			throw new DAOException ( "Error building dao "+name, e );
+		}
+		
+		try {
 			dao = (MongoDAO) c.newInstance( cluster, namespace );
-			
-		} catch ( Exception e ) {
+		} catch (InstantiationException | IllegalAccessException
+				| IllegalArgumentException | InvocationTargetException e) {
+			logger.warn( "Error building dao "+name+". "+e.getMessage() );
 			throw new DAOException ( "Error building dao "+name, e );
 		}
 		
