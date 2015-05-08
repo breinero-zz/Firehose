@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.mongodb.DBObject;
@@ -103,7 +103,7 @@ public class DAOServiceFactory {
 			logger.warn( "Error building dao "+name+". "+e.getMessage() );
 			throw new DAOException ( "Error building dao "+name, e );
 		} catch ( ClassNotFoundException e ) {
-			logger.warn( "Error building dao "+name+". "+e.getMessage() );
+			logger.warn( "Error building dao "+name+". Could not find class "+e.getMessage() );
 			throw new DAOException ( "Error building dao "+name, e );
 		}
 		
