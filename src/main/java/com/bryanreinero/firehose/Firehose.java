@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bryanreinero.firehose.cli.CallBack;
+import com.bryanreinero.firehose.dao.MongoDAO;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
-import com.bryanreinero.util.DAO;
 import com.bryanreinero.util.Application;
 import com.bryanreinero.util.WorkerPool.Executor;
 import com.mongodb.DBObject;
@@ -25,7 +25,7 @@ public class Firehose implements Executor {
 	private AtomicInteger linesRead = new AtomicInteger(0);
 	private Converter converter = new Converter();
 	private BufferedReader br = null;
-	private DAO dao = null;
+	private MongoDAO dao = null;
 	
 	private Boolean verbose = false;
 	private String filename = null;

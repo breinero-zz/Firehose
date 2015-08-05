@@ -8,6 +8,7 @@ import org.apache.commons.cli.MissingOptionException;
 
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;
+import com.bryanreinero.firehose.dao.MongoDAO;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.util.WorkerPool.Executor;
 import com.mongodb.MongoClient;
@@ -20,7 +21,7 @@ public class Application {
 	private final CommandLineInterface cli;
 	private Printer printer = new Printer( DEFAULT_PRINT_INTERVAL );
 	private final SampleSet samples;
-	private DAO dao = null;
+	private MongoDAO dao = null;
 	
 	public static final int DEFAULT_PRINT_INTERVAL = 1;
 	public static final long DEFAULT_REPORTING_INTERVAL = 5;
@@ -65,9 +66,7 @@ public class Application {
 				else
 					client = new MongoClient(w.adresses);
 				
-				w.dao = new DAO( 
-						client.getDB(w.dbname).getCollection(w.collectionName)
-						);
+				w.dao = null;//new MongoDAO( client, w.dbname+"\\."+w.collectionName);
 
 				if(  w.writeConcern != null )
 					w.dao.setConcern(w.writeConcern);
@@ -139,7 +138,7 @@ public class Application {
 
 			@Override
 			public void handle(String[] values) {
-				adresses = DAO.getServerAddresses(values);
+				adresses = MongoDAO.getServerAddresses(values);
 
 			}
 
@@ -201,7 +200,7 @@ public class Application {
 		return this.numThreads;
 	}
 
-	public DAO getDAO() {
+	public MongoDAO getDAO() {
 		return dao;
 	}
 

@@ -27,9 +27,42 @@
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-            <version>3.4</version>
+			<artifactId>commons-math3</artifactId>
+			<version>3.4</version>
 		</dependency>
+		<dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-api</artifactId>
+    <version>2.2</version>
+  </dependency>
+  <dependency>
+    <groupId>org.apache.logging.log4j</groupId>
+    <artifactId>log4j-core</artifactId>
+    <version>2.2</version>
+  </dependency>
+		  		<!-- <dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.15</version>
+			<exclusions>
+    			<exclusion>
+    			  <groupId>javax.mail</groupId>
+    			  <artifactId>mail</artifactId>
+    			</exclusion>
+    			<exclusion>
+    			  <groupId>javax.jms</groupId>
+    			  <artifactId>jms</artifactId>
+    			</exclusion>
+    			<exclusion>
+    			  <groupId>com.sun.jdmk</groupId>
+    			  <artifactId>jmxtools</artifactId>
+    			</exclusion>
+    			<exclusion>
+    			  <groupId>com.sun.jmx</groupId>
+    			  <artifactId>jmxri</artifactId>
+    			</exclusion>
+  			</exclusions>
+		</dependency> -->
 	</dependencies>
 
 	<build>
@@ -61,7 +94,8 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-							<includeGroupIds>org.mongodb, commons-cli, org.apache.commons, junit</includeGroupIds>
+							<includeGroupIds>org.mongodb, commons-cli, org.apache.commons,
+								junit</includeGroupIds>
 							<outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
 						</configuration>
 					</execution>
@@ -77,7 +111,7 @@
 						<configuration>
 							<!-- Optional -->
 							<onejarVersion>0.97</onejarVersion>
-							
+
 							<!-- Optional, default is false -->
 							<attachToBuild>true</attachToBuild>
 							<!-- Optional, default is "onejar" -->
@@ -89,13 +123,22 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.3</version>
+          <configuration>
+            <source>1.7</source>
+          	<target>1.7</target>
+          </configuration>
+        </plugin>
 		</plugins>
 	</build>
-	
+
 	<pluginRepositories>
-        <pluginRepository>
-            <id>onejar-maven-plugin.googlecode.com</id>
-            <url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
-        </pluginRepository>
-    </pluginRepositories>
+		<pluginRepository>
+			<id>onejar-maven-plugin.googlecode.com</id>
+			<url>http://onejar-maven-plugin.googlecode.com/svn/mavenrepo</url>
+		</pluginRepository>
+	</pluginRepositories>
 </project>

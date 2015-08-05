@@ -10,11 +10,6 @@ import com.bryanreinero.firehose.metrics.SampleSet;
 public class BreakerBox {
 	
 	private final Map<String, CircuitBreaker> breakers = new ConcurrentHashMap<String, CircuitBreaker>();
-	private final SampleSet samples;
-	
-	public BreakerBox( SampleSet set ) {
-		this.samples = set;
-	}
 	
 	public void setBreaker(String key, String type, Double value ) {
 		Threshold threshold = null;
@@ -63,7 +58,7 @@ public class BreakerBox {
 	 * Called periodically, checking all breakers
 	 * to trip if needed
 	 */
-	public void check() {
+	public void check( SampleSet samples ) {
 		for ( Entry<String, CircuitBreaker> e : breakers.entrySet() )
 			e.getValue().check( samples );
 				
@@ -78,7 +73,7 @@ public class BreakerBox {
 			return;
 		
 		while ( true ) {
-			// Copy on write
+			
 			CircuitBreaker breaker = breakers.get(key).clone();
 			breaker.reset();
 			
@@ -95,6 +90,11 @@ public class BreakerBox {
 		}
 	}
 	
+	public boolean isTripped( String key ) {
+		if( !breakers.containsKey(key ))
+			return false;
+		return breakers.get(key).isTripped();
+	}
 	public Map<String, CircuitBreaker> getState() {
 		Map<String, CircuitBreaker> map = new HashMap<String, CircuitBreaker>();
 		for ( Entry<String, CircuitBreaker> e : breakers.entrySet() )
