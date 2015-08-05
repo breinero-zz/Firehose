@@ -8,6 +8,15 @@ import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.mongodb.MongoClient;
 
+/**
+ * DataAccessHub is a map for Database
+ * connections such as the MongoClient Class. The
+ * Hub allows an application to connect to multiple 
+ * The Firehose application sends database request 
+ * to an Instance of the DataAccessHub (should therefore
+ * be a singleton), databases, which is helpful for data
+ * migrations or polyglot persistence architectures.
+ */
 public class DataAccessHub implements DAOService {
 	
 	private final Map<String, MongoClient> clusters = new HashMap<String, MongoClient>();
@@ -15,6 +24,11 @@ public class DataAccessHub implements DAOService {
 	private final Map<String, DataAccessObject> daos = new HashMap<String, DataAccessObject>();
 	private final SampleSet samples;
 	
+	/**
+	 *
+	 * @param key
+	 * @param c
+	 */
 	public void addCluster( String key, MongoClient c) {
 		clusters.put(key, c);
 	}
