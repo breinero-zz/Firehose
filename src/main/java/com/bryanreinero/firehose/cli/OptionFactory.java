@@ -151,7 +151,12 @@ public class OptionFactory {
 		 Options options = new Options();
 		
 		DBObject config = (DBObject) JSON.parse(json);
-		List<DBObject> ops = (List<DBObject>)((DBObject)config.get(appName)).get("options");
+		DBObject appOptions = (DBObject)config.get(appName);
+		
+		if( appOptions == null )
+			return options;
+		
+		List<DBObject> ops = (List<DBObject>)appOptions.get("options");
 		
 		
 		for( DBObject opt : ops ) {

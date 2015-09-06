@@ -9,26 +9,27 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
+import com.bryanreinero.firehose.Transformer.Type;
 import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
 
 public class Converter {
 	
-	private char delimiter = ',';
+	private String delimiter = ",";
 	
 	private static final String fieldNameSeparator = "\\.";
-	private static final Pattern arrayElemPosition = Pattern.compile( "^\\$\\d+$" );
+	private static final Pattern arrayElemPosition = Pattern.compile( "^\\$(\\d+)$" );
 
     private final List<SimpleEntry<String, Transformer>> transforms
         = new ArrayList<SimpleEntry<String, Transformer>>();
     
     public Converter(){};
 
-    public void setDelimiter(char delimiter) {
+    public void setDelimiter(String delimiter) {
 		this.delimiter = delimiter;
 	}
 
-	public Converter ( Map<String, String> header, char delimiter ) {
+	public Converter ( Map<String, String> header, String delimiter ) {
         
         this.delimiter = delimiter;
 
@@ -74,7 +75,16 @@ public class Converter {
         return document;
     }
     
-    private void nest( Object object, String[] prefix, int i, Object value ) {
+    public static void convert( Map<String, Object> document, String name, Type type, String value ) {	
+    	try {
+    	Object v = Transformer.getTransformer(type.getName()).transform(value);
+        nest( document, name.split( fieldNameSeparator ), 0, v );
+    	}	catch ( NumberFormatException e ) {
+    		throw new IllegalArgumentException( "Field "+name+" should be of type "+type, e );
+    	}
+    }
+    
+    private static void nest( Object object, String[] prefix, int i, Object value ) {
     	String name = prefix[i];
     	Matcher m;
     	
@@ -101,8 +111,16 @@ public class Converter {
     		// check if this is an array element
     		m = arrayElemPosition.matcher( name );
     		if ( object instanceof ArrayList  && m.matches() ) {
+    			
+    			ArrayList array = ((ArrayList)object);
+    		
+    			// frontfill if we are getting array elements out of order
+    			Integer index = Integer.parseInt(m.group(1));
+    			while ( index >= array.size() )
+    				array.add(null);
+    		
     			// value is an array element 
-    			((ArrayList)object).add(value);
+    			array.set(index, value);
     		}
     		else {
     			((DBObject)object).put( name, value);
@@ -128,16 +146,29 @@ public class Converter {
     }
     
     public static void main( String[] args ) {
+    	
+    	String testString = "37.5,-122.2,Slartibartfast,\"Magrethea, Center of\",5676";
 
     	Map<String, String> header = new LinkedHashMap<String, String>();
     	
-    	header.put("root.scores.$0", Transformer.TYPE_INT );
-    	header.put("root.scores.$1", Transformer.TYPE_INT );
-    	header.put("root.user.name", Transformer.TYPE_STRING );
-    	header.put("root.user.address", Transformer.TYPE_STRING );
-    	header.put("root.user.id", Transformer.TYPE_INT );
-    	Converter c = new Converter(header, ',' );
-    	DBObject obj =  c.convert("98,42,bryan,Magrethea,5676") ;
+    	header.put("geometry.coordinates.$1", Transformer.TYPE_DOUBLE );
+    	header.put("geometry.coordinates.$0", Transformer.TYPE_DOUBLE );
+    	header.put("user.name", Transformer.TYPE_STRING );
+    	header.put("user.address", Transformer.TYPE_STRING );
+    	header.put("_id", Transformer.TYPE_INT );
+    	Converter c = new Converter(header, "(?!\\B\"[^\"]*),(?![^\"]*\"\\B)" );
+    	DBObject obj =  c.convert( testString ) ;
+    	
+    	
     	System.out.println( obj );
+    	
+    	
+    	Map<String, Object> someDoc = new BasicDBObject();
+    	Converter.convert(someDoc, "geometry.coordinates.$1", Type.getType("double"), "37.5" );
+    	Converter.convert(someDoc, "geometry.coordinates.$0", Type.getType("double"), "-122.2" );
+    	Converter.convert(someDoc, "user.name", Type.getType("string"), "Slartibartfast" );
+    	Converter.convert(someDoc, "user.address", Type.getType("string"), "\"Magrethea, Center of\"" );
+    	Converter.convert(someDoc, "_id", Type.getType("int"), "5676" );
+    	System.out.println(someDoc);
     }
 }
