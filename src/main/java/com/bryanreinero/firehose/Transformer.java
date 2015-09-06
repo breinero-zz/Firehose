@@ -16,12 +16,47 @@ public abstract class Transformer <V extends Object> {
     private Transformer(){};
     
     // TODO: Make support all BSON types 
+    public static final String Type_Array = "array";
     public static final String TYPE_OBJECT_ID = "objectid";
     public static final String TYPE_STRING = "string";
     public static final String TYPE_INT = "int";
     public static final String TYPE_FLOAT = "float";
     public static final String TYPE_DOUBLE = "double";
     public static final String TYPE_BINARY = "binary";
+    public static final String TYPE_Object = "object";
+    
+    public static enum Type {
+    	ArrayType( Type_Array ),
+    	Object_Id(TYPE_OBJECT_ID), 
+    	StringType(TYPE_STRING), 
+    	IntType(TYPE_INT), 
+    	FloatType(TYPE_FLOAT),
+    	DoubleType(TYPE_DOUBLE),
+    	BinaryType(TYPE_BINARY),
+    	ObjectType(TYPE_Object);
+    	
+    	private final String name; 
+    	private Type ( String name ) { this.name = name; }  
+    	public String getName() { return name; }
+    	
+    	public static Type getType( String type ) {
+    		if( type.compareTo(TYPE_OBJECT_ID) == 0 )
+    			return Object_Id;
+    		if( type.compareTo(TYPE_STRING) == 0 )
+    			return StringType;
+    		if( type.compareTo(TYPE_INT) == 0 )
+    			return IntType;
+    		if( type.compareTo(TYPE_FLOAT) == 0 )
+        			return FloatType;
+    		if( type.compareTo(TYPE_DOUBLE) == 0 )
+    			return DoubleType;
+    		if( type.compareTo(TYPE_BINARY) == 0 )
+    			return BinaryType;
+    		if( type.compareTo(TYPE_Object) == 0 )
+    			return BinaryType;
+    		return null;
+    	}
+    }
     
     static {
         transformers = new HashMap<String, Transformer>();

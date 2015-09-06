@@ -2,24 +2,23 @@
 Firehose
 ========
 
-:Description: A tool import for DSV files into MongoDB.
+:Description: A MongoDB focused application toolkit
 :Author: Bryan Reinero <breinero@gmail.com>
 
 Overview 
 ========
 
-Firehose is both a mulithreaded DSV import tool for MongoDB, AND a instrumented execution framework which you can use to benchmark your own applications.
+Firehose is a instrumented, multithreaded execution framework which you can use to benchmark your own applications. It allows you to do sophistated testing easily.
 
 Firehose includes these major components:
  - A simple code instrumentation and reporting `library <https://github.com/bryanreinero/Firehose/tree/master/src/main/java/com/bryanreinero/firehose/metrics>`_
  - A customizable command line interface `builder <https://github.com/bryanreinero/Firehose/tree/master/src/main/java/com/bryanreinero/firehose/cli>`_
  - A multithreaded `worker pool <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java>`_
- - An application `framework <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java>`_ so that you may use all of these components together for your own load testing purposes 
+ - An application `framework <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/Application.java>`_ so that you may use all of these components together for your own load testing purposes
+- NEW! `Circuit Breaker <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/circuitbreaker>`_ package to protect staturation conditions
+ 
+You can use Firehose to generate custom load simply by providing a class which implements the `Executor interface <https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L12>`_ Firehose calls this Executor's execute method to do a single unit of work. Take a look at the `DSV import class <https://github.com/breinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L81>`_ to see an example implementation. 
 
-The Main Take Away
-~~~~~~~~~~~~~~~~~~
-
-While Firehose does include a DSV import tool, that functionality is actually just an example application which uses all of the components together to do useful work. Let's take a closer look at the import tool to understand how you might want to use Firehose's features.
 
 Firehose by Example: The DSV Import Tool
 ----------------------------------------
@@ -30,7 +29,7 @@ Ok, so I want to read a CSV file and import those records into MongoDB as fast a
 - Parse the line, converting it into a object prepped for insertion
 - Insert the new object into MongoDB
 
-As a curious and conscientious software engineer, I am very interested to know how much time each of these steps so that I can establish performance baselines. I can use Firehose's instrumentation library to mark the start end of each step with use of the `Interval class <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ class. For instance, here's how I determine how long and individual insertion took
+As a curious and conscientious software engineer, I am very interested to know how much time each of these steps take so that I can establish performance baselines. I can use Firehose's instrumentation library to mark the start and end of each step with use of the `Interval class <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ class. For instance, here's how I determine how long and individual insertion takes.
 
 ::
 
@@ -44,50 +43,61 @@ Firehose pretty prints this output, ( refreshing the console each second)
 
 ::
 
- {
-    threads: 2,
-    "linesread": 100000,
+ { 
+    threads: 2, 
+    "lines read": 100000, 
     samples: {
         units: "microseconds",
-        "interval": 1000000,
-        ops: [
-            {
-                name: "total",
-                count: 7926,
-                average: 250
-            },
-            {
-                name: "readline",
-                count: 7926,
-                average: 1
-            },
-            {
-                name: "insert",
-                count: 7926,
-                average: 182
-            },
-            {
-                name: "build",
-                count: 7924,
-                average: 3
-            }
-        ]
-    }
+        "reporting interval ms": 5,
+        total: {
+            mean: 221.32, 
+            median: 181.5, 
+            std: 82.68293015354203, 
+            count: 50, 
+            total: 11066.0
+        },
+        readline: {
+            mean: 4.160000000000002, 
+            median: 1.0, 
+            std: 14.412806097073416, 
+            count: 50, 
+            total: 208.0
+        },
+        build: {
+            mean: 14.291666666666666, 
+            median: 15.0, 
+            std: 3.439188012365297, 
+            count: 48, 
+            total: 686.0
+        },
+        insert: {
+            mean: 170.28571428571428, 
+            median: 158.0, 
+            std: 39.36368885152915, 
+            count: 49, 
+            total: 8344.0
+        }
+    } 
  }
 
-This output tells me that inserts are taking an average of 182 microseconds, as averaged over a time interval of 1000000 microseconds, (1 second). During this 1 second interval I inserted 7926 documents. As the output is printed in JSON format I can insert these stats into MongoDB for benchmarking analysis!
+This output tells me that inserts are taking an average of 170 microseconds, as averaged over a time interval of 5 milliseconds. During this interval I inserted 49 documents. As the output is printed in JSON format I can insert these stats into MongoDB for benchmarking analysis!
 
 You can take a look at how this workload is processed `here <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L35>`_
+
+JMX Integration
+---------------
+
+Firehose uses Java Management Extensions (JMX) to make it even easier monitor and manage your application. Firehose exposes Interval data with MBeans so you can gather performance metrics from a remote JMX client such as JConsole. Additionally The worker pool can be stopped, started or resized at will from the remote client without having to restart the application. More information on JMX is available `in the documentation <http://www.oracle.com/technetwork/java/javase/tech/javamanagement-140525.html>`_.
 
 Firehose by Example: The DSV Import Command Line Interface
 ----------------------------------------------------------
 
 Under the hood, Firehose uses the `Apache Commons CLI library <http://commons.apache.org/proper/commons-cli/>`_ to parse command line options passed in at runtime. Firehose wraps the Commons CLI into the framework such that we can configure my own set of command line options easily. Using the CLI framework is a two step process.
 
-1. Declare my command line options in a properties file
+1. Declare command line options in a properties file
 #. Assign callback methods to handle the input
 
-As an example let's take a look at the usage for Firehose's DSV Import feature uses the Commons CLI:  
+As an example let's take a look at the usage for Firehose's DSV Import feature to see how it uses the Commons CLI:  
 
 Usage
 -----
@@ -123,11 +133,11 @@ Usage
    * - -m,
      - --mongos 
      - <host:port>           
-     - ',' delimited list of mongodb host to connect to. Default localhost:27017,
+     - ',' delimited list of mongodb hosts to connect to. Default localhost:27017
    * - -ns,
      - --namespace 
      - <namespace>    
-     - target database and collection this work will use
+     - target database and collection this work will use (format: 'db.col')
    * - -pi,
      - --printInterval  
      - <seconds>
@@ -135,7 +145,7 @@ Usage
    * - -ri,
      - --reportInterval
      - <seconds>        
-     - average stats over an time interval of i milliseconds
+     - average stats over a time interval of i milliseconds
    * - -t,
      - --threads 
      - <threads>         
@@ -206,13 +216,13 @@ This command line invokes Firehose with 2 threads, parsing a CSV file of 4 colum
 Using The Application Framework
 -------------------------------
 
-Firehose's application framework made for standing up simple load test quickly. As such, it comes with a set of command line options fully configured for control of the worker pool, instrumentation library and access to MongoDB. Users of the application framework need only to add:
+Firehose's application framework is made for standing up simple load tests quickly. As such, it comes with a set of command line options fully configured for control of the worker pool, instrumentation library, and access to MongoDB. Users of the application framework need only add:
 
     - Any extra command line options specific to their application
     - An instance of `Executable <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/util/WorkerPool.java#L9>`_ which the worker pool calls as a unit of work 
 
 
-Let's again use the DSV import tool as an example. The application framework is initialize inside Firehose's `constructor <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L30>`_. The first step is to define the appropriate command line interface callbacks I need to handle user input.
+Let's again use the DSV import tool as an example. The application framework is initialized inside Firehose's `constructor <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L30>`_. The first step is to define the appropriate command line interface callbacks I need to handle user input.
 
 ::
 
@@ -266,6 +276,12 @@ The Application class' constructor takes 3 parameters
 
 Bingo. I'm ready to rock and roll. Notice that the 'this' in the first parameter refers to an instance of the Firehose class, which implements Executable. The overridden `execute() <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/firehose/Firehose.java#L76>`_ method is where all the work is done. 
 
+Circuit Breaker Package
+----------------------- 
+Firehose's circuit breakers watch for trigger conditions that trip the breaker automatically. This protects both the downstream server from overwhelming surges in load and the requesting client who has the circuit breaker. This is because once the circuit breaker has been tripped, the client application can respond appropriately. As opposed to simply hanging on its own pending requests to complete while the inbound load exhausts stack, heap, CPU or other resources.
+
+More detail is available `here <https://github.com/bryanreinero/Firehose/blob/master/src/main/java/com/bryanreinero/circuitbreaker>`_
+
 Build and Quickly Test Firehose
 -------------------------------
 
@@ -274,13 +290,13 @@ I've included a CSV file generator called RandomDSVGenerator so that you may tes
 ::
 
  $ mvn package 
- $ java -cp target/Firehose-<VERSION>.jar com.bryanreinero.firehose.test.RandomDSVGenerator so that you may-n 10000
+ $ java -cp target/Firehose-<VERSION>.jar com.bryanreinero.firehose.test.RandomDSVGenerator -f test.csv -n 10000
  $ java -jar target/Firehose-<VERSION>.one-jar.jar -f test.csv -d , -ns test.firehose -h _id:objectid,count.0:float,count.1:float,name:string -t 20
 
 Why Firehose?
 -------------
 
-As a consultant, I often advise my clients to instrument their application code such that they have a baseline of performance metrics. Instrumenting Getting baselines are extremely useful both in identifying bottlenecks as well as understanding how much concurrency your application can handle, determine what latency is "normal" for the application and indicate when performance is deviating from those norms.
+As a consultant, I often advise my clients to instrument their application code such that they have a baseline of performance metrics. Getting baselines is extremely useful in identifying bottlenecks, understanding how much concurrency your application can handle, determining what latency is "normal" for the application, and indicating when performance is deviating from those norms.
 
 While most developers will acknowledge the value of instrumentation, few actually implement it. So to help them along, Firehose was designed with some basic instrumentation boiled right into it.
 
@@ -293,6 +309,7 @@ Additional dependencies are:
     - `MongoDB Java Driver <http://docs.mongodb.org/ecosystem/drivers/java/>`_
     - `JUnit 4 <http://junit.org/>`_
     - `Apache Commons CLI 1.2 <http://commons.apache.org/proper/commons-cli/>`_
+    - `Apache Commons Math 3 3.4 <http://commons.apache.org/proper/commons-math/>`_
 
     
 License
