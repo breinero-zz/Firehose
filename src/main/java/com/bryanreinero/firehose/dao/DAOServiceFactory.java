@@ -56,7 +56,7 @@ public class DAOServiceFactory {
 		for( String host : (List<String>) clusterSpec.get("hosts") )
 			try {
 				addresses.add( new ServerAddress( host ) );
-			} catch (UnknownHostException e) {
+			} catch ( Exception e) {
 				throw new DAOException("Failed to build MongoClient "+name, e);
 			}
 
@@ -139,6 +139,8 @@ public class DAOServiceFactory {
 		dao.setReadPreference(pref);
 	}
 	
+	
+	// this interface needs to be re-thought, as does many aspects of this class
 	private interface PrefGetter {
 		ReadPreference getPref( DBObject tags ); 
 	}
@@ -148,31 +150,32 @@ public class DAOServiceFactory {
 				new PrefGetter () {
 			@Override
 			public ReadPreference getPref(DBObject tags) {
+				
 				return ReadPreference.primary();
 			}
 		}), 
 		secondary("secondary", new PrefGetter () {
 			@Override
 			public ReadPreference getPref(DBObject tags) {
-				return ReadPreference.secondary( tags );
+				return ReadPreference.secondary();
 			}
 		}), 
 		primaryPref("primaryPref", new PrefGetter () {
 			@Override
 			public ReadPreference getPref(DBObject tags) {
-				return ReadPreference.primaryPreferred(tags);
+				return ReadPreference.primaryPreferred();
 			}
 		}), 
 		secondaryPref("secondaryPref", new PrefGetter () {
 			@Override
 			public ReadPreference getPref(DBObject tags) {
-				return ReadPreference.secondaryPreferred(tags);
+				return ReadPreference.secondaryPreferred();
 			}
 		}),
 		nearest("nearest", new PrefGetter () {
 			@Override
 			public ReadPreference getPref(DBObject tags) {
-				return ReadPreference.nearest(tags);
+				return ReadPreference.nearest();
 			}
 		});
 		

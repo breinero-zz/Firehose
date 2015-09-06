@@ -1,6 +1,5 @@
 package com.bryanreinero.firehose.dao;
 
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -55,36 +54,33 @@ public abstract class MongoDAO implements DataAccessObject {
 
 	public void setW(String concern) {
 		wc = new WriteConcern(concern, wc.getWtimeout(), wc.getFsync(),
-				wc.getJ(), wc.getContinueOnError());
+				wc.getJ() );
 	}
 
 	public void setTimeOut(int timeout) {
 		wc = new WriteConcern(wc.getWString(), timeout, wc.getFsync(),
-				wc.getJ(), wc.getContinueOnError());
+				wc.getJ());
 	}
 
 	public void setFSync(boolean s) {
-		wc = new WriteConcern(wc.getWString(), wc.getWtimeout(), s, wc.getJ(),
-				wc.getContinueOnError());
+		wc = new WriteConcern(wc.getWString(), wc.getWtimeout(), s, wc.getJ() );
 	}
 
 	public void setJournal(boolean j) {
 
-		wc = new WriteConcern(wc.getWString(), wc.getWtimeout(), wc.getFsync(),
-				j, wc.getContinueOnError());
+		wc = new WriteConcern(wc.getWString(), wc.getWtimeout(), wc.getFsync(), j );
 	}
 
 	public void setContinueOnError(boolean cont) {
 		wc = new WriteConcern(wc.getWString(), wc.getWtimeout(), wc.getFsync(),
-				wc.getJ(), cont);
+				wc.getJ() );
 	}
 
 	public void setConcern(String s) {
 		wc = new WriteConcern(s, 
 			wc.getWtimeout(), 
 			wc.getFsync(), 
-			wc.getJ(),
-			wc.getContinueOnError()
+			wc.getJ()
 		);
 	}
 
@@ -108,10 +104,10 @@ public abstract class MongoDAO implements DataAccessObject {
 							.parseInt(s[1])));
 				else
 					addresses.add(new ServerAddress(s[0]));
-			} catch (UnknownHostException e) {
-				e.printStackTrace();
 			} catch (NumberFormatException nfe) {
 				nfe.printStackTrace();
+			} catch ( Exception e) {
+				e.printStackTrace();
 			}
 		}
 		return addresses;
