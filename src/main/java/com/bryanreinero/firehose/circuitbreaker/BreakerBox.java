@@ -1,16 +1,30 @@
 package com.bryanreinero.firehose.circuitbreaker;
 
+import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.management.ObjectName;
+
 import com.bryanreinero.firehose.metrics.SampleSet;
 
-public class BreakerBox {
+public class BreakerBox implements BreakerBoxMBean {
 	
 	private final Map<String, CircuitBreaker> breakers = new ConcurrentHashMap<String, CircuitBreaker>();
 	
+	public BreakerBox() {
+		try {
+			ObjectName name = new ObjectName("com.bryanreiner.firehose.circuitbreaker:type=CircuitBreaker");
+			ManagementFactory.getPlatformMBeanServer().registerMBean(this, name);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+	
+	@Override
 	public void setBreaker(String key, String type, Double value ) {
 		Threshold threshold = null;
 		try {
@@ -95,11 +109,39 @@ public class BreakerBox {
 			return false;
 		return breakers.get(key).isTripped();
 	}
+	
 	public Map<String, CircuitBreaker> getState() {
 		Map<String, CircuitBreaker> map = new HashMap<String, CircuitBreaker>();
 		for ( Entry<String, CircuitBreaker> e : breakers.entrySet() )
 			map.put(e.getKey(), e.getValue().clone() );
 		
 		return map;
+	}
+	
+	@Override
+	public String report() {
+
+		StringBuffer buf = new StringBuffer( "{ breakers: [ ");
+		boolean firstB = true;
+		for( Entry< String, CircuitBreaker> e : this.getState().entrySet() ) {
+			
+			if ( !firstB ) buf.append(", "); else firstB = false;
+			buf.append("{ name: "+e.getKey() );
+			buf.append(", tripped: "+e.getValue().isTripped() );
+			buf.append(", thresholds: [ ");
+			boolean firstT = true;
+			for ( Threshold t : e.getValue().getThresholds() ) {
+				if ( !firstT ) buf.append(", "); else firstT = false;
+				buf.append("{ "+t.getType()+": "+t.getValue()+" }" );
+			}
+			buf.append(" ] }");
+		}
+		buf.append(" ] }");
+		return buf.toString();
+	}
+
+	@Override
+	public void resetBreaker(String name) {
+		this.reset(name);
 	}
 }
