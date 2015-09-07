@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.bryanreinero.firehose.circuitbreaker.BreakerBox;
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.dao.MongoDAO;
 import com.bryanreinero.firehose.metrics.Interval;
@@ -30,8 +31,12 @@ public class Firehose implements Executor {
 	private Boolean verbose = false;
 	private String filename = null;
 	
+	// memebers for Circuit Breaker
+	private BreakerBox breakerBox;
+	
 	public Firehose ( String[] args ) throws Exception {
 		
+		// First step, set up the command line interface
 		Map<String, CallBack> myCallBacks = new HashMap<String, CallBack>();
 		
 		// custom command line callback for csv conversion
@@ -45,7 +50,7 @@ public class Firehose implements Executor {
 			}
 		});
 		
-		// custom command line callback for delimeter
+		// custom command line callback for delimiter
 		myCallBacks.put("d", new CallBack() {
 			@Override
 			public void handle(String[] values) {
@@ -53,7 +58,7 @@ public class Firehose implements Executor {
 			}
 		});
 
-		// custom command line callback for delimeter
+		// custom command line callback for delimiter
 		myCallBacks.put("f", new CallBack() {
 			@Override
 			public void handle(String[] values) {
@@ -67,12 +72,19 @@ public class Firehose implements Executor {
 			}
 		});
 
-		
+		// Second step, set up the application logic, including the worker queue
 		worker = Application.ApplicationFactory.getApplication( appName, this, args,
 				myCallBacks);
 		samples = worker.getSampleSet();
+	
 		stats = new Statistics( samples );
-		dao = worker.getDAO();
+		
+		// Set up the breaker box
+		
+		breakerBox = new BreakerBox();
+		
+		// start the work queue
+		dao = worker.getDAO();		
 		worker.addPrinable(this);
 		worker.start();
 	}
