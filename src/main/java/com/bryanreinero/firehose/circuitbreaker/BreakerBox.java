@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.management.ObjectName;
 
@@ -13,8 +14,32 @@ import com.bryanreinero.firehose.metrics.SampleSet;
 public class BreakerBox implements BreakerBoxMBean {
 	
 	private final Map<String, CircuitBreaker> breakers = new ConcurrentHashMap<String, CircuitBreaker>();
+	private final SampleSet samples;
+	private final Monitor monitor = new Monitor();
+	private AtomicBoolean running = new AtomicBoolean(true);
 	
-	public BreakerBox() {
+	private class Monitor extends Thread {
+
+		@Override
+		public void run() {
+			try {
+				while (true) {
+					if (!running.get())
+						throw new InterruptedException();
+					for( Entry<String, CircuitBreaker> entry : breakers.entrySet() ) {
+						entry.getValue().check(samples);
+					}
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
+	}
+	
+	public BreakerBox( SampleSet samples ) {
+		
+		this.samples = samples;
+		
 		try {
 			ObjectName name = new ObjectName("com.bryanreiner.firehose.circuitbreaker:type=CircuitBreaker");
 			ManagementFactory.getPlatformMBeanServer().registerMBean(this, name);
@@ -22,6 +47,11 @@ public class BreakerBox implements BreakerBoxMBean {
 			e.printStackTrace();
 		}
 
+	}
+	
+	public void start() {
+		running.set(true);
+		monitor.start();
 	}
 	
 	@Override
@@ -72,7 +102,7 @@ public class BreakerBox implements BreakerBoxMBean {
 	 * Called periodically, checking all breakers
 	 * to trip if needed
 	 */
-	public void check( SampleSet samples ) {
+	public void check() {
 		for ( Entry<String, CircuitBreaker> e : breakers.entrySet() )
 			e.getValue().check( samples );
 				
@@ -83,25 +113,8 @@ public class BreakerBox implements BreakerBoxMBean {
 	 * @param key the name of the CircuitBreaker
 	 */
 	public void reset( String key  ) {
-		if( ! breakers.containsKey(key) ) 
-			return;
-		
-		while ( true ) {
-			
-			CircuitBreaker breaker = breakers.get(key).clone();
-			breaker.reset();
-			
-			// Compare and swap
-			synchronized ( breakers ) {
-				if( ! breakers.containsKey(key) ) 
-					return;
-				
-				if( breakers.get(key).getUUID() == breaker.getUUID() ) {
-					breakers.put(key, breaker);
-					return;
-				}
-			}
-		}
+		if( breakers.containsKey(key) ) 
+			breakers.get(key).reset();
 	}
 	
 	public boolean isTripped( String key ) {

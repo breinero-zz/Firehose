@@ -66,7 +66,7 @@ public class Application {
 				else
 					client = new MongoClient(w.adresses);
 				
-				w.dao = null;//new MongoDAO( client, w.dbname+"\\."+w.collectionName);
+				w.dao = new MongoDAO( client, w.dbname+"."+w.collectionName );
 
 				if(  w.writeConcern != null )
 					w.dao.setConcern(w.writeConcern);

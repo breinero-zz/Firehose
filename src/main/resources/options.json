@@ -1,4 +1,16 @@
 {
+    "LoadDemo": {
+         "options": [
+            {
+                "op": "n",
+                "longOpt" : "maxObj",
+                "name": "maxNumObjects",
+                "description":"Max number objects in collection",
+                "required": true,
+                "args" : 1
+            }
+         ]
+    },
     "Firehose": {
         "options": [
             {
@@ -73,14 +85,14 @@
                 "longOpt" : "printInterval",
                 "name": "interval",
                 "description": "print output every n seconds",
-                "args": "1"
+                "args": 1
             },
             {
                 "op": "ri",
-                "longOpt" : "reporti=Interval",
+                "longOpt" : "reportingInterval",
                 "name": "interval",
-                "description": "averate stats over an time interval of i milleseconds",
-                "args": "1"
+                "description": "average stats over an time interval of i milleseconds",
+                "args": 1
             },
             {
                 "op": "cr",

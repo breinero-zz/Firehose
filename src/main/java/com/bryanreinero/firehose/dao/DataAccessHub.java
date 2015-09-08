@@ -20,7 +20,7 @@ import com.mongodb.MongoClient;
 public class DataAccessHub implements DAOService {
 	
 	private final Map<String, MongoClient> clusters = new HashMap<String, MongoClient>();
-	private final BreakerBox circuitBreakers = new BreakerBox();
+	private final BreakerBox circuitBreakers;
 	private final Map<String, DataAccessObject> daos = new HashMap<String, DataAccessObject>();
 	private final SampleSet samples;
 	
@@ -35,6 +35,7 @@ public class DataAccessHub implements DAOService {
 
 	public DataAccessHub( SampleSet samples ) {
 		this.samples = samples;
+		circuitBreakers = new BreakerBox( samples );
 	}
 	
 	@Override

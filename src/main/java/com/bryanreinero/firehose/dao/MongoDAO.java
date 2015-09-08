@@ -13,7 +13,7 @@ import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
 import com.mongodb.WriteResult;
 
-public abstract class MongoDAO implements DataAccessObject {
+public class MongoDAO implements DataAccessObject {
 
 	protected final DBCollection collection;
 	protected final DB db;
@@ -24,6 +24,18 @@ public abstract class MongoDAO implements DataAccessObject {
 
 	public WriteResult insert(DBObject object) {
 		return collection.insert(object);
+	}
+	
+	public DBObject read( DBObject query ) {
+		return collection.findOne( query );
+	}
+	
+	public WriteResult update( DBObject query, DBObject update ) {
+		return collection.update(query, update);
+	}
+	
+	public WriteResult delete( DBObject query ) {
+		return collection.remove(query);
 	}
 
 	public MongoDAO( MongoClient client, String namespace) {
@@ -133,5 +145,8 @@ public abstract class MongoDAO implements DataAccessObject {
 	}
 
 	@Override
-	public abstract Object execute(Map<String, Object> request) throws DAOException;
+	public Object execute(Map<String, Object> request) throws DAOException {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

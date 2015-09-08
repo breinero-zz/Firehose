@@ -81,7 +81,7 @@ public class Firehose implements Executor {
 		
 		// Set up the breaker box
 		
-		breakerBox = new BreakerBox();
+		breakerBox = new BreakerBox( samples );
 		
 		// start the work queue
 		dao = worker.getDAO();		

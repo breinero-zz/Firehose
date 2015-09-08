@@ -54,7 +54,7 @@ public class CircuitBreaker {
 	 * @return
 	 */
 	public boolean reset () {
-		return isTripped.compareAndSet(false, true);
+		return isTripped.compareAndSet(true, false);
 	}
 	
 	/**
