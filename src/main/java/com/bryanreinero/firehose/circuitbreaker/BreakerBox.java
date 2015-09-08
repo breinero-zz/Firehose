@@ -70,29 +70,9 @@ public class BreakerBox implements BreakerBoxMBean {
 				break;
 			};
 
-			while ( true ) {
-				// Copy on write
-				CircuitBreaker breaker = breakers.get(key);
-				if( breaker == null ) 
-					breaker = new CircuitBreaker( key );
-				else 
-					breaker = breaker.clone();
-
-				breaker.setThreshold( threshold );
-				
-				// Compare and Swap
-				synchronized ( breakers ) {
-					if( ! breakers.containsKey(key) ) {
-						breakers.put(key, breaker);
-						return;
-					}
-					if( breakers.get(key).getUUID() == breaker.getUUID() ) {
-						breakers.put(key, breaker);
-						return;
-					}
-				}
-			}
-
+			CircuitBreaker breaker = new CircuitBreaker( key );
+			breaker.setThreshold( threshold );
+			breakers.put(key, breaker);		
 		} catch ( IllegalArgumentException e ) {
 			throw new IllegalArgumentException( "Can't set breaker named "+key, e);
 		}
