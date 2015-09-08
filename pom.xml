@@ -70,17 +70,9 @@
 							<goal>copy-dependencies</goal>
 						</goals>
 						<configuration>
-<<<<<<< HEAD
 							<includeGroupIds>org.mongodb, commons-cli, org.apache.commons,
-								junit</includeGroupIds>
-=======
-<<<<<<< HEAD
-							<includeGroupIds>org.mongodb, commons-cli, org.apache.commons,
-								junit</includeGroupIds>
-=======
-							<includeGroupIds>org.mongodb, commons-cli, org.apache.commons, junit</includeGroupIds>
->>>>>>> 1cd83e17d78c5daa1c967857e8fd09c6904e932a
->>>>>>> 8995a63485843602d9e5ccb0840b7885982bf8a1
+								junit
+                            </includeGroupIds>
 							<outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
 						</configuration>
 					</execution>

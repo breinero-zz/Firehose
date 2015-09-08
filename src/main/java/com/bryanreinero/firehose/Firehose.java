@@ -92,8 +92,15 @@ public class Firehose implements Executor {
     @Override
     public void execute() {
         String currentLine = null;
+        
+        // Drop out of the method if any of these operations have tripped
+        // their circuit breakers
+        if( breakerBox.isTripped("total") || breakerBox.isTripped("insert") )
+        	return;
+        
         Interval total = samples.set("total");
         try {
+        	
         	
         	// read the next line from source file
         	Interval readLine = samples.set("readline");
