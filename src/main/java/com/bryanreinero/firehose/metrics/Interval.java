@@ -3,7 +3,7 @@ package com.bryanreinero.firehose.metrics;
 import java.util.concurrent.Delayed;
 import java.util.concurrent.TimeUnit;
 
-public class Interval implements Delayed {
+public class Interval implements Delayed, AutoCloseable {
 	
 	private final static Long microSecsPerMil = new Long(1000);
 	private final Long start = System.nanoTime();
@@ -49,5 +49,12 @@ public class Interval implements Delayed {
 	@Override
 	public long getDelay( TimeUnit unit ) {
 		return unit.convert( set.getTimeToLive() - ( System.currentTimeMillis() - inception ), TimeUnit.MILLISECONDS );
+	}
+
+	@Override
+	public void close() {
+		end = System.nanoTime();
+		inception = System.currentTimeMillis();
+		set.add(this);
 	}
 }
