@@ -114,11 +114,7 @@ public class LoadDemo implements Executor {
 		
 		// Next, set up the breaker box
 		breakerBox = new BreakerBox( samples );
-		breakerBox.setBreaker("insert", "latency", 250D );
-//		breakerBox.setBreaker("read", "latency", 250D );
-//		breakerBox.setBreaker("update", "latency", 250D );
-//		breakerBox.setBreaker("delete", "latency", 250D );
-		
+		breakerBox.setBreaker("insert", "latency", 2000D );
 		breakerBox.start();
 		
 		// start the work queue
