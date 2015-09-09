@@ -74,7 +74,7 @@ public class WorkerPool implements WorkerPoolMBean {
 		this.executor = executor;
 		
 		try {
-			ObjectName name = new ObjectName("com.bryanreiner.firehose.util:type=Workpool"); 
+			ObjectName name = new ObjectName("com.bryanreiner.firehose:type=Workpool"); 
 			ManagementFactory.getPlatformMBeanServer().registerMBean(this, name); 
 		} catch (Exception e) {
 			e.printStackTrace();

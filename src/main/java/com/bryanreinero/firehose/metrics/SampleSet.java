@@ -46,7 +46,7 @@ public class SampleSet {
 	public SampleSet(){
 
 		try {
-			ObjectName name = new ObjectName("com.bryanreiner.firehose.metrics:type=Statistics");
+			ObjectName name = new ObjectName("com.bryanreiner.firehose:type=Statistics");
 			Statistics mbean = new Statistics( this ); 
 			ManagementFactory.getPlatformMBeanServer().registerMBean(mbean, name); 
 		} catch (Exception e) {

@@ -41,7 +41,7 @@ public class BreakerBox implements BreakerBoxMBean {
 		this.samples = samples;
 		
 		try {
-			ObjectName name = new ObjectName("com.bryanreiner.firehose.circuitbreaker:type=CircuitBreaker");
+			ObjectName name = new ObjectName("com.bryanreiner.firehose:type=CircuitBreaker");
 			ManagementFactory.getPlatformMBeanServer().registerMBean(this, name);
 		} catch (Exception e) {
 			e.printStackTrace();
