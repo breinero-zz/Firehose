@@ -12,9 +12,9 @@ public class SampleSetTest {
 	@Test
 	public void test() {
 		String name = "test";
-		Interval interval;
+		
 		for ( int i = 1; i <= 100; i++ ) {
-			set.set(name).mark();
+			try (Interval interval = set.set(name) ) {} 
 			DescriptiveStatistics stats = set.report(name);
 			assertEquals( i, stats.getN() );
 		}
