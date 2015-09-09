@@ -47,9 +47,10 @@ public class DataAccessHub implements DAOService {
 		
 		DataAccessObject dao = daos.get(key);
 		if ( daos != null ) {
-			Interval i = samples.set(key);
-			Object o = dao.execute(request);
-			i.mark();
+			Object o = null;
+			try ( Interval i = samples.set(key) ) {
+				o = dao.execute(request);
+			}
 			return o;
 		}
 		return null;

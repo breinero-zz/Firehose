@@ -98,36 +98,37 @@ public class Firehose implements Executor {
         if( breakerBox.isTripped("total") || breakerBox.isTripped("insert") )
         	return;
         
-        Interval total = samples.set("total");
         try {
         	
-        	
-        	// read the next line from source file
-        	Interval readLine = samples.set("readline");
-        	synchronized ( br ) {
-            	currentLine = br.readLine();
+        	try (  Interval total = samples.set("total")  ) {
+
+        		// read the next line from source file
+        		try ( Interval readLine = samples.set("readline") ) {
+        			synchronized ( br ) {
+        				currentLine = br.readLine();
+        			}
+        		}
+
+        		if ( currentLine == null )
+        			worker.stop();
+
+        		else {
+        			linesRead.incrementAndGet();
+
+        			DBObject object = null;
+
+        			// Create the DBObject for insertion
+        			try ( Interval build = samples.set("build") ) {
+        				object = converter.convert( currentLine );
+        			}
+
+        			// Insert the DBObject
+        			try ( Interval insert = samples.set("insert") ) {
+        				dao.insert( object );
+        			}
+
+        		}
         	}
-            readLine.mark();
-            
-            if ( currentLine == null )
-                worker.stop();
-             
-            else {
-                linesRead.incrementAndGet();
-                
-                // Create the DBObject for insertion
-                Interval build = samples.set("build");
-                DBObject object = converter.convert( currentLine );
-                build.mark();
-                
-                // Insert the DBObject
-                Interval insert = samples.set("insert");
-                dao.insert( object );
-                insert.mark();
-                
-                total.mark();
-   
-            }
         } catch (IOException e) {
         	worker.stop();
             e.printStackTrace();

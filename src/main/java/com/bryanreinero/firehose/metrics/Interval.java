@@ -26,12 +26,6 @@ public class Interval implements Delayed, AutoCloseable {
 		return start;
 	}
 	
-	public void mark() {
-		end = System.nanoTime();
-		inception = System.currentTimeMillis();
-		set.add(this);
-	}
-	
 	public Long duration(){ 
 		return (end - start)/microSecsPerMil;
 	}

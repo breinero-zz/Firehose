@@ -114,7 +114,7 @@ public class LoadDemo implements Executor {
 		
 		// Next, set up the breaker box
 		breakerBox = new BreakerBox( samples );
-		breakerBox.setBreaker("insert", "latency", 2000D );
+		breakerBox.setBreaker("insert", "latency", 200000D );
 		breakerBox.start();
 		
 		// start the work queue
@@ -139,9 +139,9 @@ public class LoadDemo implements Executor {
 		newguy.put( "b", rand.nextFloat() );
 		newguy.put( "c", rand.nextFloat() );
 		
-		Interval t = samples.set("insert");
-		dao.insert( newguy );
-		t.mark();
+		try ( Interval t = samples.set("insert") ) {
+		    dao.insert( newguy );
+		}
 		
 		ids.add( id );
 	}
@@ -156,9 +156,9 @@ public class LoadDemo implements Executor {
 				 ids.get( rand.nextInt( ids.size() ) )
 		);
 		
-		Interval t = samples.set("read");
-	    dao.read( query );
-	    t.mark();
+		try ( Interval t = samples.set("read") ) {
+	    	dao.read( query );
+		}
 	}
 	
 	private void updateADocument() {
@@ -173,9 +173,9 @@ public class LoadDemo implements Executor {
 		
 		DBObject set = new BasicDBObject( "$set", new BasicDBObject( "a", rand.nextFloat() ) );
 		
-		Interval t = samples.set("update");
-		dao.update( query, set );
-		t.mark();
+		try ( Interval t = samples.set("update") ) {
+			dao.update( query, set );
+	    }
 	}
 	
 	private void deleteADocument() {
@@ -187,9 +187,9 @@ public class LoadDemo implements Executor {
 		ObjectId id = ids.get( index );
 		DBObject query = new BasicDBObject( "_id", id );
 		
-		Interval t = samples.set("delete");
-		dao.delete(query);
-		t.mark();
+		try ( Interval t = samples.set("delete") ) {
+			dao.delete(query);
+		}
 		
 		ids.remove( index );
 	}
@@ -197,10 +197,10 @@ public class LoadDemo implements Executor {
 	@Override
 	public void execute() {
 		
-		Interval t = samples.set("total");
-		// get a random CRUD operation to execute
-		operations.run( rand.nextFloat() );
-		t.mark();
+		try ( Interval t = samples.set("total") ) { 
+			// get a random CRUD operation to execute
+			operations.run( rand.nextFloat() );
+		}
 
 	}
 	
