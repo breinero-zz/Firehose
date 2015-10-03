@@ -1,4 +1,4 @@
-package com.bryanreinero.firehose.dao;
+package com.bryanreinero.util;
 
 public interface RetryStrategy {
 	public int getMaxRetries();

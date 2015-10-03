@@ -1,5 +1,7 @@
 package com.bryanreinero.firehose.dao;
 
+import com.bryanreinero.util.RetryStrategy;
+
 public class FailFast implements RetryStrategy {
 
 	@Override

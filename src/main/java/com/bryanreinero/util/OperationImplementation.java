@@ -1,14 +1,21 @@
-package com.bryanreinero.firehose.dao;
+package com.bryanreinero.util;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
 
 import com.bryanreinero.firehose.circuitbreaker.CircuitBreaker;
+import com.bryanreinero.firehose.dao.DAOException;
+import com.bryanreinero.firehose.dao.DataAccessObject;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 
-public abstract class Operation implements Callable {
-	
+public abstract class OperationImplementation implements Callable<Result> {
+
+	/*
+	* An OperationImplementation Object
+	* has a timeout from which it should consider it's request failed
+	*/
+
 	private final String name;
 	private final SampleSet samples;
 	private final DataAccessObject dao;
@@ -36,7 +43,7 @@ public abstract class Operation implements Callable {
 	}
 
 	// the operation need 
-	public Operation( String name, SampleSet samples, DataAccessObject dao, Map<String, Object>request ) {
+	public OperationImplementation(String name, SampleSet samples, DataAccessObject dao, Map<String, Object> request) {
 		this.name = name;
 		this.samples = samples;
 		this.dao = dao;
