@@ -1,56 +1,49 @@
 package com.bryanreinero.util;
 
 
-import java.util.concurrent.CompletionService;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorCompletionService;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class BetterWorkPool {
 	
 	private int NTHREADS = 1;
 	private final ExecutorService es;
-	private final CompletionService<Operation> cs;
-
-	/*
-	Should this class have a DelayQueue for retries?
-	 */
+	private final CompletionService<Result> cs;
+    private final RetryQueue queue;
 	
 	public BetterWorkPool() {
 		es = Executors.newFixedThreadPool(NTHREADS);
-		cs = new ExecutorCompletionService<Operation>( es );
+		cs = new ExecutorCompletionService<Result>( es );
+
+        queue = new RetryQueue( this );
+        queue.run();
 	}
 	
-	public void submitTask( Operation task ) {
+	public void submitTask( Callable<Result> task ) {
 		
-		es.submit( task );
+		cs.submit(task);
 
+		Future<Result> future = null;
 		try {
-			Future<Operation> future = cs.take();
-			Object o = future.get();
+			future = cs.take();
+			Result r = future.get();
 
+			if( r.hasFailed() ) {
+
+                if ( r.getNextAttempt() != null )
+                    queue.put( r.getNextAttempt() );
+
+                else
+                    System.out.println("Operation " + r.toString() + " Failed. " + r.getMessage());
+            }
 			
 		} catch (InterruptedException ie ) {
-
-			if( !task.isCancelled() ) {
-
-				Operation retry = null;
-				if ( ( retry = task.getRetry() ) != null )
-					submitTask(retry);
-			}
+			// gotta figure out what to do here
 
 		} catch ( ExecutionException e) {
-			if ( future != null )
-				e.printStackTrace();
+			e.printStackTrace();
 		} finally {
-			task.complete();
+            //TODO something for real
+            System.out.println( "task.complete()" ) ;
 		}
 	}
 }
-
-/*
- * OperationImplementation has a retry strategy
- * RetryStrategy is of 
- */

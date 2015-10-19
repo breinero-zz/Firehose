@@ -5,13 +5,31 @@ import java.util.concurrent.Callable;
 /**
  * Created by breinero on 9/26/15.
  */
-public interface Operation extends Callable<Result> {
+public abstract class Operation implements Callable<Result> {
 
-    public String getName();
+    private final String name;
+    private final long start = System.nanoTime();
 
-    public RetryStrategy getRetryStrategy();
+    private int attempts = 0;
+    private RetryPolicy policy= null;
 
-    public void complete();
+    public Operation ( String s )  { name = s; }
 
-    public int getAttempts();
+    public String getName() {
+        return name;
+    }
+
+    public RetryPolicy getRetryPolicy() { return policy; }
+
+    public void setRetryPolicy( RetryPolicy p ) { policy =  p; }
+
+    public int getAttempts() {
+        return attempts;
+    }
+
+    public void incAttempts() {
+        attempts++;
+    }
+
+    public long getStartTime() { return start; }
 }
