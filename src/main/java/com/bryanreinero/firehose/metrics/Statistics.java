@@ -1,8 +1,8 @@
 package com.bryanreinero.firehose.metrics;
 
-import java.util.Map.Entry;
-
 import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
+import java.util.Map;
 
 public class Statistics implements StatisticsMBean {
 
@@ -19,7 +19,7 @@ public class Statistics implements StatisticsMBean {
 		buf.append("\"reporting interval ms\": ");
 		buf.append( set.getTimeToLive() );
 		
-		for( Entry<String, DescriptiveStatistics> aggregate : set.report().entrySet() ) {
+		for( Map.Entry<String, DescriptiveStatistics> aggregate : set.report().entrySet() ) {
 			buf.append(",\n");
 			DescriptiveStatistics stat = aggregate.getValue();
 			buf.append(aggregate.getKey());
