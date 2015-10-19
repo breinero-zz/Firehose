@@ -1,5 +1,10 @@
 package com.bryanreinero.firehose.cli;
 
+import com.mongodb.DBObject;
+import com.mongodb.util.JSON;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -7,19 +12,13 @@ import java.io.Reader;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
-
-import com.mongodb.DBObject;
-import com.mongodb.util.JSON;
-
 public class OptionFactory {
 
 	private interface Setter {
-		public void set(Option op, Object value);
+		void set(Option op, Object value);
 	}
 
-	private static enum Setters implements Setter {
+	private enum Setters implements Setter {
 		longOpt {
 
 			@Override 
