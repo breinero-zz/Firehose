@@ -5,22 +5,26 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.bryanreinero.firehose.circuitbreaker.BreakerBox;
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.dao.MongoDAO;
+import com.bryanreinero.firehose.dao.mongo.Write;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
 import com.bryanreinero.util.Application;
-import com.bryanreinero.util.WorkerPool.Executor;
+import com.bryanreinero.util.ThreadPool;
+import com.bryanreinero.util.Result;
 import com.mongodb.DBObject;
 
-public class Firehose implements Executor {
+public class Firehose {
 	
 	private static final String appName = "Firehose";
-	private final Application worker;
+	private final Application app;
+	private final ThreadPool threadPool;
 	private final SampleSet samples;
 	private final Statistics stats;
 	private AtomicInteger linesRead = new AtomicInteger(0);
@@ -30,9 +34,57 @@ public class Firehose implements Executor {
 	
 	private Boolean verbose = false;
 	private String filename = null;
-	
-	// memebers for Circuit Breaker
-	private BreakerBox breakerBox;
+
+	private AtomicBoolean running = new AtomicBoolean( true );
+
+	private class UnitOfWork implements Callable<Result> {
+		@Override
+		public Result call() throws Exception {
+			String currentLine = null;
+
+			try {
+
+				try (Interval total = samples.set("total")) {
+
+					// read the next line from source file
+					try (Interval readLine = samples.set("readline")) {
+						synchronized (br) {
+							currentLine = br.readLine();
+						}
+					}
+
+					if (currentLine == null)
+						running.set(false);
+
+					else {
+						linesRead.incrementAndGet();
+
+						DBObject object = null;
+
+						// Create the DBObject for insertion
+						try (Interval build = samples.set("build")) {
+							object = converter.convert(currentLine);
+						}
+
+						// Insert the DBObject
+						try (Interval insert = samples.set("insert")) {
+							dao.insert(object);
+						}
+
+					}
+				}
+			} catch (IOException e) {
+				running.set(false);
+				e.printStackTrace();
+			} finally {
+				synchronized (br) {
+					if (br != null) br.close();
+				}
+
+			}
+			return null;
+		};
+	}
 	
 	public Firehose ( String[] args ) throws Exception {
 		
@@ -72,81 +124,26 @@ public class Firehose implements Executor {
 			}
 		});
 
-		// Second step, set up the application logic, including the worker queue
-		worker = Application.ApplicationFactory.getApplication( appName, this, args,
-				myCallBacks);
-		samples = worker.getSampleSet();
-	
+		// Second step, set up the application logic, including the app queue
+		app = Application.ApplicationFactory.getApplication( appName, args, myCallBacks);
+		threadPool = app.getThreadPool();
+		samples = app.getSampleSet();
 		stats = new Statistics( samples );
 		
-		// Set up the breaker box
-		
-		breakerBox = new BreakerBox( samples );
-		
 		// start the work queue
-		dao = worker.getDAO();		
-		worker.addPrinable(this);
-		worker.start();
+		dao = app.getDAO();
+		app.addPrinable(this);
+
 	}
-	
-    @Override
+
     public void execute() {
-        String currentLine = null;
-        
-        // Drop out of the method if any of these operations have tripped
-        // their circuit breakers
-        if( breakerBox.isTripped("total") || breakerBox.isTripped("insert") )
-        	return;
-        
-        try {
-        	
-        	try (  Interval total = samples.set("total")  ) {
-
-        		// read the next line from source file
-        		try ( Interval readLine = samples.set("readline") ) {
-        			synchronized ( br ) {
-        				currentLine = br.readLine();
-        			}
-        		}
-
-        		if ( currentLine == null )
-        			worker.stop();
-
-        		else {
-        			linesRead.incrementAndGet();
-
-        			DBObject object = null;
-
-        			// Create the DBObject for insertion
-        			try ( Interval build = samples.set("build") ) {
-        				object = converter.convert( currentLine );
-        			}
-
-        			// Insert the DBObject
-        			try ( Interval insert = samples.set("insert") ) {
-        				dao.insert( object );
-        			}
-
-        		}
-        	}
-        } catch (IOException e) {
-        	worker.stop();
-            e.printStackTrace();
-            
-            try {
-            	synchronized ( br ) {
-                	if (br != null)br.close();
-            	}
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
-        }
+        while ( running.get()  ) threadPool.submitTask(new UnitOfWork());
     }
 	
 	@Override 
 	public String toString() {
 		StringBuffer buf = new StringBuffer("{ ");
-		buf.append("threads: "+worker.getNumThreads() );
+		buf.append("threads: " + app.getNumThreads());
 		buf.append(", \"lines read\": "+ this.linesRead );
 		buf.append(", samples: "+ stats.report() );
 		
@@ -162,7 +159,8 @@ public class Firehose implements Executor {
     public static void main( String[] args ) {
     	
     	try {
-    		new Firehose( args );
+    		Firehose f = new Firehose( args );
+			f.execute();
 		} 
 		catch (Exception e) {
 			e.printStackTrace();

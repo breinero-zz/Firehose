@@ -10,14 +10,13 @@ import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;
 import com.bryanreinero.firehose.dao.MongoDAO;
 import com.bryanreinero.firehose.metrics.SampleSet;
-import com.bryanreinero.util.WorkerPool.Executor;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
 
 public class Application {
 	
 	private final static String appName = "ApplicationFramework";
-	private final WorkerPool workers;
+	private final ThreadPool workers;
 	private final CommandLineInterface cli;
 	private Printer printer = new Printer( DEFAULT_PRINT_INTERVAL );
 	private final SampleSet samples;
@@ -36,9 +35,9 @@ public class Application {
 	
 	
 	public static class ApplicationFactory {
-		public static Application getApplication( String name, Executor executor, String[] args, Map<String, CallBack> cbs ) throws Exception {
+		public static Application getApplication( String name, String[] args, Map<String, CallBack> cbs ) throws Exception {
 			try {
-				Application w = new Application(executor);
+				Application w = new Application();
 				
 				w.cli.addOptions(name);
 				//add custom callbacks
@@ -92,7 +91,7 @@ public class Application {
 		cli.addCallBack(key, cb);
 	}
 
-	private Application(Executor executor) throws Exception {
+	private Application() throws Exception {
 		samples = new SampleSet();
 		samples.setTimeToLive(DEFAULT_REPORTING_INTERVAL);
 
@@ -181,19 +180,7 @@ public class Application {
 
 		});
 
-		workers = new WorkerPool(executor);
-	}
-
-	public void start() {
-		workers.setNumThreads(this.numThreads);
-		workers.start();
-		printer.start();
-	}
-	
-	public void stop() {
-		workers.stop();
-		printer.stop();
-		samples.stop();
+		workers = new ThreadPool( numThreads );
 	}
 
 	public int getNumThreads() {
@@ -207,6 +194,8 @@ public class Application {
 	public void addPrinable(Object o) {
 		printer.addPrintable(o);
 	}
+
+	public ThreadPool getThreadPool() { return workers; }
 
 }
 

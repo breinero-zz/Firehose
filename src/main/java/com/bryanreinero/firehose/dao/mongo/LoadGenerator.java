@@ -3,7 +3,7 @@ package com.bryanreinero.firehose.dao.mongo;
 import com.bryanreinero.firehose.dao.BasicRetry;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
-import com.bryanreinero.util.BetterWorkPool;
+import com.bryanreinero.util.ThreadPool;
 import com.mongodb.MongoClient;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
@@ -17,7 +17,7 @@ public class LoadGenerator  {
     private final SampleSet samples;
     private final Statistics stats;
 
-    private final BetterWorkPool pool = new BetterWorkPool();
+    private final ThreadPool pool = new ThreadPool();
 
     private final MongoClient mongoClient = new MongoClient();
     private final MongoCollection<Document> collection;

@@ -3,15 +3,15 @@ package com.bryanreinero.util;
 
 import java.util.concurrent.*;
 
-public class BetterWorkPool {
-	
-	private int NTHREADS = 1;
+public class ThreadPool {
+
 	private final ExecutorService es;
 	private final CompletionService<Result> cs;
     private final RetryQueue queue;
 	
-	public BetterWorkPool() {
-		es = Executors.newFixedThreadPool(NTHREADS);
+	public ThreadPool(int t) {
+
+		es = Executors.newFixedThreadPool( t );
 		cs = new ExecutorCompletionService<Result>( es );
 
         queue = new RetryQueue( this );
