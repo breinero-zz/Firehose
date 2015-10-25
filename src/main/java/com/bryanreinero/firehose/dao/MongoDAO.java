@@ -1,59 +1,80 @@
 package com.bryanreinero.firehose.dao;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.mongodb.DB;
-import com.mongodb.DBObject;
-import com.mongodb.DBCollection;
+import com.bryanreinero.firehose.dao.mongo.Write;
+
+import com.bryanreinero.firehose.metrics.SampleSet;
+import com.bryanreinero.util.retry.BasicRetry;
+import com.bryanreinero.util.Operation;
+
 import com.mongodb.MongoClient;
 import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
-import com.mongodb.WriteResult;
+
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import org.bson.Document;
+import org.bson.codecs.configuration.CodecRegistry;
 
 public class MongoDAO implements DataAccessObject {
 
-	protected final DBCollection collection;
-	protected final DB db;
 	protected final MongoClient client;
+	private final MongoCollection<Document> collection;
+    private final Map<String, Operation> operations = new HashMap<String, Operation>();
 
 	protected WriteConcern wc = null;
 	protected ReadPreference rp;
 
-	public WriteResult insert(DBObject object) {
-		return collection.insert(object);
-	}
-	
-	public DBObject read( DBObject query ) {
-		return collection.findOne( query );
-	}
-	
-	public WriteResult update( DBObject query, DBObject update ) {
-		return collection.update(query, update);
-	}
-	
-	public WriteResult delete( DBObject query ) {
-		return collection.remove(query);
-	}
+    private SampleSet samples = null;
 
 	public MongoDAO( MongoClient client, String namespace) {
 		this.client = client;
 		String[] nameSpaceArray = namespace.split("\\.");
-		db = client.getDB(nameSpaceArray[0]);
-		collection = db.getCollection(nameSpaceArray[1]);
+
+		MongoDatabase db = client.getDatabase(nameSpaceArray[0]);
+		collection = db.getCollection( nameSpaceArray[1] );
+
+        CodecRegistry registry = collection.getCodecRegistry();
 		
 		wc = new WriteConcern();
 		rp = ReadPreference.primary();
 	}
 
-	@Override
+    public Write getNewInsert(Document object) {
+        Write write = new Write( "WriteSample", object, collection, samples );
+        write.setRetryPolicy( new BasicRetry( 3, 5000, 50000000, write ) );
+        return  write ;
+    }
+
+    public void setSampleSet( SampleSet s ) { samples = s; }
+
+    public void setOperation( Document descriptor ){
+
+        Operation op = null;
+
+		Document retryDescriptor = descriptor.get( "retryPolicy" );
+
+        //Map<String, String> retryPolicy = descriptor.get( "retryPolicy" );
+
+        //RetryPolicy policy = new BasicRetry( 3, 5000, 50000000, );
+        operations.put(descriptor.getString("name"), op);
+    }
+
+    public void submitOperation( String name, Document doc ) {
+        Write write = new Write( name, doc, collection, samples );
+    }
+
+    @Override
 	public String toString() {
 
 		WriteConcern concern = collection.getWriteConcern();
 		StringBuffer buf = new StringBuffer(" { namespace: \""
-				+ collection.getFullName() + "\"");
+				+ collection.getNamespace() + "\"");
 		buf.append(", writeConcern: { ");
 		buf.append(" w: " + concern.getWString());
 		buf.append(", j: " + concern.getJ());

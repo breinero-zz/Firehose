@@ -7,6 +7,7 @@ import java.util.Vector;
 import java.util.List;
 import java.util.ArrayList;
 
+import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import com.bryanreinero.firehose.circuitbreaker.BreakerBox;
@@ -101,7 +102,7 @@ public class LoadDemo implements Executor {
 				
 		// Second step, set up the application logic, including the worker queue
 		try {
-			worker = Application.ApplicationFactory.getApplication(appName, this, args, myCallBacks);
+			worker = Application.ApplicationFactory.getApplication( appName, args, myCallBacks);
 			dao = worker.getDAO();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -120,7 +121,6 @@ public class LoadDemo implements Executor {
 		// start the work queue
 		dao = worker.getDAO();
 		worker.addPrinable(this);
-		worker.start();
 	}
 	
 	public static void main ( String[] args ) {
@@ -134,13 +134,13 @@ public class LoadDemo implements Executor {
 			return;
 		
 		ObjectId id = new ObjectId();
-		DBObject newguy = new BasicDBObject("_id", id);
+		Document newguy = new Document("_id", id);
 		newguy.put( "a", rand.nextFloat() );
 		newguy.put( "b", rand.nextFloat() );
 		newguy.put( "c", rand.nextFloat() );
 		
 		try ( Interval t = samples.set("insert") ) {
-		    dao.insert( newguy );
+		    dao.getNewInsert( newguy );
 		}
 		
 		ids.add( id );

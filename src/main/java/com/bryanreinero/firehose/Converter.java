@@ -12,6 +12,7 @@ import java.util.regex.Matcher;
 import com.bryanreinero.firehose.Transformer.Type;
 import com.mongodb.DBObject;
 import com.mongodb.BasicDBObject;
+import org.bson.Document;
 
 public class Converter {
 	
@@ -54,10 +55,10 @@ public class Converter {
         );
     }
 
-    public DBObject convert( String line ) {
+    public Document convert( String line ) {
     	
     	String[] values = line.split( String.valueOf( delimiter ) );
-    	DBObject document = new BasicDBObject();
+		Document document = new Document();
     	
         if ( values.length != transforms.size() )
             throw new IllegalArgumentException ( 
@@ -91,7 +92,7 @@ public class Converter {
     	if ( i < prefix.length - 1  ) {
 
     		// casting hell
-    		DBObject parent = (DBObject)object;
+    		Document parent = (Document)object;
     		Object obj = parent.get( name );
     		
     		if ( obj == null ) {
@@ -101,7 +102,7 @@ public class Converter {
     				obj = new ArrayList();
 
     			else
-    				obj = new BasicDBObject();
+    				obj = new Document();
 
     			parent.put( name, obj );
     		}
@@ -157,13 +158,13 @@ public class Converter {
     	header.put("user.address", Transformer.TYPE_STRING );
     	header.put("_id", Transformer.TYPE_INT );
     	Converter c = new Converter(header, "(?!\\B\"[^\"]*),(?![^\"]*\"\\B)" );
-    	DBObject obj =  c.convert( testString ) ;
+    	Document obj =  c.convert( testString ) ;
     	
     	
     	System.out.println( obj );
     	
     	
-    	Map<String, Object> someDoc = new BasicDBObject();
+    	Map<String, Object> someDoc = new Document();
     	Converter.convert(someDoc, "geometry.coordinates.$1", Type.getType("double"), "37.5" );
     	Converter.convert(someDoc, "geometry.coordinates.$0", Type.getType("double"), "-122.2" );
     	Converter.convert(someDoc, "user.name", Type.getType("string"), "Slartibartfast" );

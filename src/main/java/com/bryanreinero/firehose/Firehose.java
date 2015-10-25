@@ -19,6 +19,7 @@ import com.bryanreinero.util.Application;
 import com.bryanreinero.util.ThreadPool;
 import com.bryanreinero.util.Result;
 import com.mongodb.DBObject;
+import org.bson.Document;
 
 public class Firehose {
 	
@@ -59,7 +60,7 @@ public class Firehose {
 					else {
 						linesRead.incrementAndGet();
 
-						DBObject object = null;
+						Document object = null;
 
 						// Create the DBObject for insertion
 						try (Interval build = samples.set("build")) {
@@ -68,7 +69,7 @@ public class Firehose {
 
 						// Insert the DBObject
 						try (Interval insert = samples.set("insert")) {
-							dao.insert(object);
+							dao.getNewInsert(object);
 						}
 
 					}
