@@ -1,4 +1,6 @@
-package com.bryanreinero.util;
+package com.bryanreinero.util.retry;
+
+import com.bryanreinero.util.Result;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Delayed;

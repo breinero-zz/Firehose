@@ -1,6 +1,8 @@
 package com.bryanreinero.util;
 
 
+import com.bryanreinero.util.retry.RetryQueue;
+
 import java.util.concurrent.*;
 
 public class ThreadPool {

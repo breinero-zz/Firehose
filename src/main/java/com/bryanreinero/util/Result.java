@@ -1,5 +1,7 @@
 package com.bryanreinero.util;
 
+import com.bryanreinero.util.retry.RetryRequest;
+
 /**
  * Created by breinero on 9/27/15.
  */

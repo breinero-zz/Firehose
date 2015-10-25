@@ -1,4 +1,6 @@
-package com.bryanreinero.util;
+package com.bryanreinero.util.retry;
+
+import com.bryanreinero.util.ThreadPool;
 
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -9,10 +11,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RetryQueue extends Thread {
 
     private final DelayQueue queue;
-    private final BetterWorkPool pool;
+    private final ThreadPool pool;
     private AtomicBoolean running = new AtomicBoolean( false );
 
-    public RetryQueue( BetterWorkPool p ) {
+    public RetryQueue( ThreadPool p ) {
         queue = new DelayQueue();
         pool = p;
     }
