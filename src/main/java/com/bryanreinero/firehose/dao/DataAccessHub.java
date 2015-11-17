@@ -3,26 +3,31 @@ package com.bryanreinero.firehose.dao;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bryanreinero.firehose.circuitbreaker.BreakerBox;
-import com.bryanreinero.firehose.metrics.Interval;
-import com.bryanreinero.firehose.metrics.SampleSet;
+import com.bryanreinero.firehose.dao.mongo.MongoDAO;
+import com.bryanreinero.util.Operation;
+import com.bryanreinero.util.OperationDescriptor;
+
 import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
 
 /**
  * DataAccessHub is a map for Database
  * connections such as the MongoClient Class. The
- * Hub allows an application to connect to multiple 
+ * Hub allows an application to connect to multiple database
+ * types.
+ *
  * The Firehose application sends database request 
  * to an Instance of the DataAccessHub (should therefore
- * be a singleton), databases, which is helpful for data
+ * be a singleton), which is helpful for data
  * migrations or polyglot persistence architectures.
  */
-public class DataAccessHub implements DAOService {
+public class DataAccessHub {
 	
 	private final Map<String, MongoClient> clusters = new HashMap<String, MongoClient>();
-	private final BreakerBox circuitBreakers;
-	private final Map<String, DataAccessObject> daos = new HashMap<String, DataAccessObject>();
-	private final SampleSet samples;
+	private final Map<String, OperationDescriptor> descriptors = new HashMap<String, OperationDescriptor>();
+
+
+	private final Map<String, Class<? extends Operation>> operations = new HashMap<String, Class<? extends Operation>>();
 	
 	/**
 	 *
@@ -33,39 +38,22 @@ public class DataAccessHub implements DAOService {
 		clusters.put(key, c);
 	}
 
-	public DataAccessHub( SampleSet samples ) {
-		this.samples = samples;
-		circuitBreakers = new BreakerBox( samples );
-	}
-	
-	@Override
-	public Object execute(String key, Map<String, Object> request)
-			throws DAOException {
-		
-		if( circuitBreakers.isTripped(key) ) 
-			throw new DAOException("Breaker "+key+" tripped");
-		
-		DataAccessObject dao = daos.get(key);
-		if ( daos != null ) {
-			Object o = null;
-			try ( Interval i = samples.set(key) ) {
-				o = dao.execute(request);
-			}
-			return o;
-		}
-		return null;
-	}
+    public void addDAO(MongoDAO dao) {
+        String name = dao.getName();
+        String cluster = dao.getClusterName();
 
-	@Override
-	public void setDataAccessObject(String key, DataAccessObject dao) {
-		daos.put(key, dao);
-	}
+        MongoClient client = null;
+        if( ( client = clusters.get(cluster) ) == null )
+            throw new IllegalArgumentException( "No cluster exists for "+cluster );
 
-	MongoClient getCluster(String clusterName) {
-		return clusters.get( clusterName );
-	}
+        MongoDatabase db = client.getDatabase(dao.getDatabaseName());
+        dao.setDatabase(db);
+        dao.setCollection(db.getCollection(dao.getCollectionName()));
 
-	public void setCircuitBreaker(String key, String type, Double value) {
-		circuitBreakers.setBreaker(key, type, value);
-	}
+        descriptors.put(name, dao);
+    }
+
+	public Operation submit( String name, Object... o ) {
+        return descriptors.get( name ).getOperation();
+    }
 }

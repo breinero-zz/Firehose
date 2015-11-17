@@ -57,23 +57,6 @@
                 args: 1
             },
             {
-                "op": "wc",
-                "longOpt" : "writeConcern",
-                "name": "concern",
-                "description": "write concern. Default = NORMAL",
-                "args": 1
-            },
-            {
-                "op": "ns",
-                "longOpt" : "namespace",
-                "name": "database.collection",
-                "description": "target database and collection this work will use",
-                "required": true,
-                "args": 2,
-                separator: "."
-                
-            },
-            {
                 "op": "v",
                 "longOpt" : "verbose",
                 "name": "verbose",
@@ -99,24 +82,6 @@
                 "longOpt" : "noPretty",
                 "name": "format",
                 "description": "print out in CR-delimited lines. Default is console mode pretty printing, when possible"
-            },
-            {
-                "op": "j",
-                "longOpt" : "journal",
-                "name": "j",
-                "description": "enable write concern wait for journal commit"
-            },
-            {
-                "op": "fs",
-                "longOpt" : "fsync",
-                "name": "sync",
-                "description": "enable write concern wait for page flush"
-            },
-            {
-            	"op": "b",
-            	"longOpt": "batch",
-            	"args": 1,
-            	"description": "Bulk write in batches of n"
             }
         ]
     },

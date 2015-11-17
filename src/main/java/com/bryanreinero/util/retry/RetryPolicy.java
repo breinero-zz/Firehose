@@ -14,5 +14,5 @@ public abstract class RetryPolicy {
 
 	}
 	abstract int getMaxRetries();
-	abstract RetryRequest getRetry( Operation o );
+	public abstract RetryRequest getRetry(Operation o);
 }

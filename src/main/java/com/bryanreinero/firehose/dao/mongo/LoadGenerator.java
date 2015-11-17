@@ -1,6 +1,9 @@
 package com.bryanreinero.firehose.dao.mongo;
 
-import com.bryanreinero.firehose.dao.BasicRetry;
+import com.bryanreinero.firehose.dao.DataAccessHub;
+import com.bryanreinero.util.Operation;
+import com.bryanreinero.util.OperationDescriptor;
+import com.bryanreinero.util.retry.BasicRetry;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
 import com.bryanreinero.util.ThreadPool;
@@ -17,10 +20,12 @@ public class LoadGenerator  {
     private final SampleSet samples;
     private final Statistics stats;
 
-    private final ThreadPool pool = new ThreadPool();
+    private final ThreadPool pool = new ThreadPool(1);
 
     private final MongoClient mongoClient = new MongoClient();
     private final MongoCollection<Document> collection;
+
+    private final DataAccessHub hub  = new DataAccessHub();
 
     public LoadGenerator() throws Exception {
 
@@ -29,20 +34,23 @@ public class LoadGenerator  {
 
         MongoDatabase database = mongoClient.getDatabase("test");
         collection =  database.getCollection("test");
+
+        MongoDAO dao = new MongoDAO<Document, Write>("ExampleWrite", "mongodb://localhost:27017/", "firehose.test");
+        dao.setOperationCtor( Write.class.getConstructor() );
+        hub.addDAO( dao );
+
+        dao = new MongoDAO<Document, Read>("ExampleRead", "mongodb://localhost:27017/", "firehose.test");
+        dao.setOperationCtor( Read.class.getConstructor() );
+        hub.addDAO( dao );
+
     }
 
     public void runOne ( )  {
+        Operation op = hub.submit("ExampleWrite", new Document());
+        pool.submitTask( op );
 
-        Document query = new Document();
-        Read read = new Read( "ReadLink", query, collection, samples );
-        read.setRetryPolicy( new BasicRetry( 3, 5000, 50000000, read ) );
-        pool.submitTask( read );
-
-        Document sample = new Document();
-
-        Write write = new Write( "WriteSample", sample, collection, samples );
-        write.setRetryPolicy( new BasicRetry( 3, 5000, 50000000, write ) );
-        pool.submitTask( write );
+        op = hub.submit("ExampleRead", new Document() );
+        pool.submitTask( op );
     }
 
     public static void main( String[] args )  {

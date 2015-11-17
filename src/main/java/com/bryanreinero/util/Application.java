@@ -4,11 +4,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.bryanreinero.firehose.dao.mongo.MongoDAO;
 import org.apache.commons.cli.MissingOptionException;
 
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;
-import com.bryanreinero.firehose.dao.MongoDAO;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.mongodb.MongoClient;
 import com.mongodb.ServerAddress;
@@ -29,9 +29,7 @@ public class Application {
 	private List<ServerAddress> adresses = null;
 	private String collectionName = null;
 	private String dbname = null;
-	private String writeConcern = null;
-	private boolean journal = false;
-	private boolean fsync = false;
+
 	
 	
 	public static class ApplicationFactory {
@@ -53,24 +51,13 @@ public class Application {
 					throw new Exception( "bad options", e );
 				}
 				
-				// Sanity checking
-				if(  w.collectionName == null )
-					throw new IllegalStateException( "Target collection name can't be null");
-				if(  w.dbname == null )
-					throw new IllegalStateException( "Target database name can't be null");
-				
 				MongoClient client;
 				if( w.adresses == null || w.adresses.isEmpty() ) 
 					client = new MongoClient();
 				else
 					client = new MongoClient(w.adresses);
 				
-				w.dao = new MongoDAO( client, w.dbname+"."+w.collectionName );
-
-				if(  w.writeConcern != null )
-					w.dao.setConcern(w.writeConcern);
-				if(w.journal) w.dao.setJournal(w.journal);
-				if(w.fsync ) w.dao.setFSync(w.fsync);
+				w.dao = new MongoDAO( "TestOperation", "localhost", w.dbname+"."+w.collectionName );
 
 				return w;
 			} catch ( Exception e )  {
@@ -137,8 +124,7 @@ public class Application {
 
 			@Override
 			public void handle(String[] values) {
-				adresses = MongoDAO.getServerAddresses(values);
-
+				//adresses = MongoDAO.getServerAddresses(values);
 			}
 
 		});
@@ -150,32 +136,6 @@ public class Application {
 			public void handle(String[] values) {
 				collectionName = values[1];
 				dbname = values[0];
-			}
-
-		});
-
-		cli.addCallBack("wc", new CallBack() {
-			@Override
-			public void handle(String[] values) {
-				writeConcern = values[0];
-			}
-
-		});
-
-		cli.addCallBack("j", new CallBack() {
-
-			@Override
-			public void handle(String[] values) {
-				journal = Boolean.parseBoolean(values[0]);
-			}
-
-		});
-
-		cli.addCallBack("fs", new CallBack() {
-
-			@Override
-			public void handle(String[] values) {
-				fsync = Boolean.parseBoolean(values[0]);
 			}
 
 		});

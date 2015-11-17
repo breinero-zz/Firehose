@@ -1,7 +1,5 @@
 package com.bryanreinero.firehose.dao;
 
-import java.util.Map;
-
-public interface DataAccessObject {
-	public Object execute(Map<String, Object>request) throws DAOException;
+public interface DataAccessObject <T> {
+    Object execute( Object... args ) throws DAOException;
 }

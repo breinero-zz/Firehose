@@ -10,15 +10,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bryanreinero.firehose.cli.CallBack;
-import com.bryanreinero.firehose.dao.MongoDAO;
+import com.bryanreinero.firehose.dao.DataAccessHub;
+import com.bryanreinero.firehose.dao.mongo.MongoDAO;
 import com.bryanreinero.firehose.dao.mongo.Write;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
-import com.bryanreinero.util.Application;
-import com.bryanreinero.util.ThreadPool;
-import com.bryanreinero.util.Result;
-import com.mongodb.DBObject;
+import com.bryanreinero.util.*;
 import org.bson.Document;
 
 public class Firehose {
@@ -32,6 +30,8 @@ public class Firehose {
 	private Converter converter = new Converter();
 	private BufferedReader br = null;
 	private MongoDAO dao = null;
+
+	private final DataAccessHub dataHub;
 	
 	private Boolean verbose = false;
 	private String filename = null;
@@ -68,9 +68,8 @@ public class Firehose {
 						}
 
 						// Insert the DBObject
-						try (Interval insert = samples.set("insert")) {
-							dao.getNewInsert(object);
-						}
+						Operation op = dataHub.submit( "insert", object );
+						threadPool.submitTask( op );
 
 					}
 				}
@@ -130,9 +129,17 @@ public class Firehose {
 		threadPool = app.getThreadPool();
 		samples = app.getSampleSet();
 		stats = new Statistics( samples );
-		
-		// start the work queue
-		dao = app.getDAO();
+
+		dataHub = new DataAccessHub();
+
+
+		// Firehose now needs to create the required operation descriptor
+		// and register it with the DataAccessHub
+		MongoDAO dao = new MongoDAO<Document, Write>("insert", "mongodb://localhost:27017/", "firehose.test");
+
+        dao.setOperationCtor( Write.class.getConstructor() );
+		dataHub.addDAO( dao );
+
 		app.addPrinable(this);
 
 	}

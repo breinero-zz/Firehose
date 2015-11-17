@@ -7,12 +7,18 @@ import java.util.Vector;
 import java.util.List;
 import java.util.ArrayList;
 
+import com.bryanreinero.firehose.dao.DataAccessHub;
+import com.bryanreinero.firehose.dao.mongo.MongoDAO;
+import com.bryanreinero.firehose.dao.mongo.Read;
+import com.bryanreinero.firehose.dao.mongo.Write;
+
+import com.bryanreinero.util.ThreadPool;
+import com.mongodb.MongoClient;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
 import com.bryanreinero.firehose.circuitbreaker.BreakerBox;
 import com.bryanreinero.firehose.cli.CallBack;
-import com.bryanreinero.firehose.dao.MongoDAO;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
@@ -22,18 +28,15 @@ import com.bryanreinero.firehose.markov.Event;
 import com.bryanreinero.firehose.markov.Outcome;
 
 import com.bryanreinero.util.Application;
-import com.bryanreinero.util.WorkerPool.Executor;
-import com.mongodb.BasicDBObject;
-import com.mongodb.DBObject;
 
-public class LoadDemo implements Executor {
-	
-	
+public class LoadDemo {
+
 	private static final String appName = "LoadDemo";
-	private Application worker = null;
+	private Application app = null;
+    private ThreadPool pool = new ThreadPool( 1 );
 	private final SampleSet samples;
 	private final Statistics stats;
-	private MongoDAO dao = null;
+	private DataAccessHub hub = null;
 	
 	// members for Circuit Breaker
 	private BreakerBox breakerBox;
@@ -48,39 +51,39 @@ public class LoadDemo implements Executor {
 	public LoadDemo( String[] args ) {
 
 		// create Markov tree for CRUD operation distribution
-		
-				List<Event> events = new ArrayList<Event>();
-				
-				events.add( new Event("create", 0.25f, 
-						new Outcome() {
-							@Override
-							public void execute() {
-								createADocument();
-							}
-						}
-					)
-				);
-				
-				events.add( new Event("read", 0.25f, new Outcome() {
-					@Override
-					public void execute() {
-						readADocument();
-					}
-				}));
-				
-				events.add( new Event("update", 0.25f, new Outcome() {
-					@Override
-					public void execute() {
-						updateADocument();
-					}
-				}));
-				
-				events.add(  new Event("delete", 0.25f, new Outcome() {
-					@Override
-					public void execute() {
-						deleteADocument();
-					}
-				}));
+		List<Event> events = new ArrayList<Event>();
+
+        events.add(
+                new Event("create", 0.25f,
+                        new Outcome() {
+                            @Override
+                            public void execute() {
+                                createADocument();
+                            }
+                        }
+                )
+        );
+
+		events.add(new Event("read", 0.25f, new Outcome() {
+			@Override
+			public void execute() {
+				readADocument();
+			}
+		}));
+
+		events.add(new Event("update", 0.25f, new Outcome() {
+			@Override
+			public void execute() {
+				updateADocument();
+			}
+		}));
+
+		events.add(new Event("delete", 0.25f, new Outcome() {
+			@Override
+			public void execute() {
+				deleteADocument();
+			}
+		}));
 				
 		operations.setEvent( events );
 		
@@ -100,65 +103,96 @@ public class LoadDemo implements Executor {
 					}
 				});
 				
-		// Second step, set up the application logic, including the worker queue
+		// Second step, set up the application logic, including the app queue
 		try {
-			worker = Application.ApplicationFactory.getApplication( appName, args, myCallBacks);
-			dao = worker.getDAO();
+			app = Application.ApplicationFactory.getApplication( appName, args, myCallBacks);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		// prepare the instrumentation
-		samples = worker.getSampleSet();
+
+        // Prepare the data access hub and
+        // operation descriptors
+        hub = new DataAccessHub();
+        hub.addCluster( "test", new MongoClient() );
+
+        MongoDAO<Document, Write> descriptor = new MongoDAO<Document, Write>( "insert", "test", "firehose.data" );
+        try {
+            descriptor.setOperationCtor( Write.class.getConstructor() );
+            hub.addDAO( descriptor );
+        } catch (NoSuchMethodException e) {
+            //TODO: repsond appropriately
+            e.printStackTrace();
+        }
+
+        descriptor = new MongoDAO<Document, Write>( "update", "test", "firehose.data" );
+        try {
+            descriptor.setOperationCtor( Write.class.getConstructor() );
+            hub.addDAO( descriptor );
+        } catch (NoSuchMethodException e) {
+            //TODO: repsond appropriately
+            e.printStackTrace();
+        }
+
+         descriptor = new MongoDAO<Document, Write>( "delete", "test", "firehose.data" );
+        try {
+            descriptor.setOperationCtor( Write.class.getConstructor() );
+			hub.addDAO( descriptor );
+        } catch (NoSuchMethodException e) {
+            //TODO: repsond appropriately
+            e.printStackTrace();
+        }
+
+        MongoDAO<Document, Read> readDescriptor = new MongoDAO<Document, Read>( "query", "test", "firehose.data" );
+        try {
+            descriptor.setOperationCtor( Write.class.getConstructor() );
+			hub.addDAO( readDescriptor );
+        } catch (NoSuchMethodException e) {
+            //TODO: repsond appropriately
+            e.printStackTrace();
+        }
+
+
+        // prepare the instrumentation
+		samples = app.getSampleSet();
 		stats = new Statistics(samples);
 		
 		// Next, set up the breaker box
 		breakerBox = new BreakerBox( samples );
 		breakerBox.setBreaker("insert", "latency", 200000D );
 		breakerBox.start();
-		
-		// start the work queue
-		dao = worker.getDAO();
-		worker.addPrinable(this);
+
+        // prepare the output format
+		app.addPrinable(this);
 	}
 	
 	public static void main ( String[] args ) {
 		LoadDemo demo = new LoadDemo( args );
+		demo.execute();
 	}
 	
 	private void createADocument() {
 		
-		if ( ids.size() >= maxNumberObjects ||
-				breakerBox.isTripped("insert") )
-			return;
+		if ( ids.size() >= maxNumberObjects ) return;
 		
 		ObjectId id = new ObjectId();
 		Document newguy = new Document("_id", id);
 		newguy.put( "a", rand.nextFloat() );
 		newguy.put( "b", rand.nextFloat() );
 		newguy.put( "c", rand.nextFloat() );
-		
-		try ( Interval t = samples.set("insert") ) {
-		    dao.getNewInsert( newguy );
-		}
+		pool.submitTask( hub.submit( "insert", newguy ) );
 		
 		ids.add( id );
 	}
 	
 	private void readADocument() {
-		if( ids.isEmpty()  ||
-				breakerBox.isTripped("read") )
-			return;
-		
-		DBObject query = new BasicDBObject(
+		if( ids.isEmpty() ) return;
+		Document query = new Document(
 				"_id",
 				 ids.get( rand.nextInt( ids.size() ) )
 		);
-		
-		try ( Interval t = samples.set("read") ) {
-	    	dao.read( query );
-		}
+
+        pool.submitTask( hub.submit( "read", query ) );
 	}
 	
 	private void updateADocument() {
@@ -166,48 +200,42 @@ public class LoadDemo implements Executor {
 				breakerBox.isTripped("update") )
 			return;
 
-		DBObject query = new BasicDBObject(
+		Document query = new Document(
 				"_id",
 				 ids.get( rand.nextInt( ids.size() ) )
 		);
 		
-		DBObject set = new BasicDBObject( "$set", new BasicDBObject( "a", rand.nextFloat() ) );
-		
-		try ( Interval t = samples.set("update") ) {
-			dao.update( query, set );
-	    }
+		Document set = new Document( "$set", new Document( "a", rand.nextFloat() ) );
+
+        pool.submitTask( hub.submit( "update", query ) );
 	}
 	
 	private void deleteADocument() {
-		if( ids.isEmpty()  ||
-				breakerBox.isTripped("delete") )
+		if( ids.isEmpty() )
 			return;
 		
 		int index = rand.nextInt( ids.size() ) ;
 		ObjectId id = ids.get( index );
-		DBObject query = new BasicDBObject( "_id", id );
-		
-		try ( Interval t = samples.set("delete") ) {
-			dao.delete(query);
-		}
+		Document query = new Document( "_id", id );
+
+        pool.submitTask( hub.submit( "delete", query ) );
 		
 		ids.remove( index );
 	}
 
-	@Override
 	public void execute() {
-		
-		try ( Interval t = samples.set("total") ) { 
-			// get a random CRUD operation to execute
-			operations.run( rand.nextFloat() );
-		}
-
+        //while ( true ) {
+            try (Interval t = samples.set("total")) {
+                // get a random CRUD operation to execute
+                operations.run(rand.nextFloat());
+            }
+        //}
 	}
 	
 	@Override 
 	public String toString() {
 		StringBuffer buf = new StringBuffer();
-		buf.append("threads: "+worker.getNumThreads() );
+		buf.append("threads: " + app.getNumThreads());
 		buf.append(", \"documents\": "+ ids.size() );
 		buf.append(", samples: "+ stats.report() );
 		buf.append(" }");
