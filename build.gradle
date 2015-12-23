@@ -1,0 +1,41 @@
+group 'bryanreinero'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'java'
+apply plugin: 'application'
+
+
+
+sourceCompatibility = 1.8
+ext.javaDriverVersion = '3.0.0'
+ext.hadoopVersion = '2.6.0'
+ext.buildDir = './build'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    provided
+    compile.extendsFrom provided
+}
+
+dependencies {
+    testCompile group: 'junit', name: 'junit', version: '4.11'
+    compile "org.mongodb:mongo-java-driver:${javaDriverVersion}"
+}
+
+jar {
+    zip64 true
+    dependsOn configurations.runtime
+
+    from {
+        ( configurations.runtime - configurations.provided).collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
+    }
+}
