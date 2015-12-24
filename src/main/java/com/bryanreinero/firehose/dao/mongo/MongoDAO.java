@@ -40,10 +40,10 @@ import java.lang.reflect.InvocationTargetException;
         this.opCtor = ctor;
     }
 
-    public Operation getOperation() {
+    public Operation getOperation(Object... o) {
         Operation operation = null;
         try {
-            operation = opCtor.newInstance( );
+            operation = opCtor.newInstance( o, this);
         } catch (InstantiationException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {

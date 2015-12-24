@@ -40,11 +40,17 @@ public class ThreadPool {
 			
 		} catch (InterruptedException ie ) {
 			// gotta figure out what to do here
+			ie.printStackTrace();
 
 		} catch ( ExecutionException e) {
 			e.printStackTrace();
-		} finally {
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+		finally {
             //TODO something for real
+
+
             System.out.println( "task.complete()" ) ;
 		}
 	}

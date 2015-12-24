@@ -21,5 +21,5 @@ public abstract class OperationDescriptor <T extends Operation>{
     public RetryPolicy getRetryPolicy() { return policy; }
     public void setRetryPolicy( RetryPolicy p ) { policy =  p; }
 
-    public abstract T getOperation();
+    public abstract T getOperation(Object... o);
 }

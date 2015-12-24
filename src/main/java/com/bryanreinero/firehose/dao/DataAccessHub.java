@@ -54,6 +54,6 @@ public class DataAccessHub {
     }
 
 	public Operation submit( String name, Object... o ) {
-        return descriptors.get( name ).getOperation();
+        return descriptors.get( name ).getOperation( o );
     }
 }

@@ -8,11 +8,12 @@ import com.bryanreinero.util.Result;
 import com.mongodb.*;
 
 import org.bson.BsonDocument;
+import org.bson.Document;
 
 /**
  * Created by breinero on 10/11/15.
  */
-public class Write <T> extends Operation {
+public class Write <T>  extends Operation {
 
     private final T document;
     private final MongoDAO descriptor;
@@ -28,6 +29,7 @@ public class Write <T> extends Operation {
         incAttempts();
 
         try ( Interval i = samples.set( getName() ) ) {
+            System.out.println( "Inserting "+document );
             descriptor.getCollection().insertOne( document );
         }
         catch ( MongoWriteException mwe ) {

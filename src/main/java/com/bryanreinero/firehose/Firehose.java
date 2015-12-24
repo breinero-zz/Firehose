@@ -137,7 +137,7 @@ public class Firehose {
 		// and register it with the DataAccessHub
 		MongoDAO dao = new MongoDAO<Document, Write>("insert", "mongodb://localhost:27017/", "firehose.test");
 
-        dao.setOperationCtor( Write.class.getConstructor() );
+        dao.setOperationCtor( Write.class.getConstructor( Object.class, MongoDAO.class ) );
 		dataHub.addDAO( dao );
 
 		app.addPrinable(this);

@@ -48,7 +48,7 @@ public class LoadDemo {
 	
 	private Chain operations = new Chain();
 	
-	public LoadDemo( String[] args ) {
+	public LoadDemo( String[] args ) throws Exception {
 
 		// create Markov tree for CRUD operation distribution
 		List<Event> events = new ArrayList<Event>();
@@ -92,13 +92,13 @@ public class LoadDemo {
 		// custom command line callback for delimiter
 				myCallBacks.put("n", new CallBack() {
 					@Override
-					public void handle(String[] values) {	
+					public void handle(String[] values) throws Exception {
 						try { 
 							maxNumberObjects  = Integer.parseInt( values[0] );
 							ids = new Vector( maxNumberObjects );
 						}catch (Exception e) {
-							e.printStackTrace();
-							System.exit(-1);
+							throw new Exception(
+                                    "CLI Callback to set max number of objects failed ", e );
 						}
 					}
 				});
@@ -107,8 +107,7 @@ public class LoadDemo {
 		try {
 			app = Application.ApplicationFactory.getApplication( appName, args, myCallBacks);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            throw new Exception( "Application failed to initialize", e );
 		}
 
         // Prepare the data access hub and
@@ -116,40 +115,31 @@ public class LoadDemo {
         hub = new DataAccessHub();
         hub.addCluster( "test", new MongoClient() );
 
-        MongoDAO<Document, Write> descriptor = new MongoDAO<Document, Write>( "insert", "test", "firehose.data" );
-        try {
-            descriptor.setOperationCtor( Write.class.getConstructor() );
-            hub.addDAO( descriptor );
-        } catch (NoSuchMethodException e) {
-            //TODO: repsond appropriately
-            e.printStackTrace();
-        }
+		MongoDAO<Document, Write> descriptor  =  null;
 
-        descriptor = new MongoDAO<Document, Write>( "update", "test", "firehose.data" );
-        try {
-            descriptor.setOperationCtor( Write.class.getConstructor() );
+		try {
+            descriptor = new MongoDAO<Document, Write>( "insert", "test", "firehose.data" );
+            descriptor.setOperationCtor( Write.class.getConstructor( Object.class, MongoDAO.class ) );
             hub.addDAO( descriptor );
-        } catch (NoSuchMethodException e) {
-            //TODO: repsond appropriately
-            e.printStackTrace();
-        }
 
-         descriptor = new MongoDAO<Document, Write>( "delete", "test", "firehose.data" );
-        try {
-            descriptor.setOperationCtor( Write.class.getConstructor() );
-			hub.addDAO( descriptor );
+            descriptor = new MongoDAO<Document, Write>( "update", "test", "firehose.data" );
+            descriptor.setOperationCtor( Write.class.getConstructor( Object.class, MongoDAO.class ) );
+            hub.addDAO( descriptor );
+
+            descriptor = new MongoDAO<Document, Write>( "delete", "test", "firehose.data" );
+            descriptor.setOperationCtor( Write.class.getConstructor( Object.class, MongoDAO.class ) );
+            hub.addDAO( descriptor );
+
         } catch (NoSuchMethodException e) {
-            //TODO: repsond appropriately
-            e.printStackTrace();
+            throw new Exception("Failed to initialize MongoDAO named: "+descriptor.getName(), e);
         }
 
         MongoDAO<Document, Read> readDescriptor = new MongoDAO<Document, Read>( "query", "test", "firehose.data" );
         try {
-            descriptor.setOperationCtor( Write.class.getConstructor() );
+            readDescriptor.setOperationCtor( Read.class.getConstructor( Object.class, MongoDAO.class ) );
 			hub.addDAO( readDescriptor );
         } catch (NoSuchMethodException e) {
-            //TODO: repsond appropriately
-            e.printStackTrace();
+            throw new Exception("Failed to initialize MongoDAO "+readDescriptor.getName(), e);
         }
 
 
@@ -167,10 +157,15 @@ public class LoadDemo {
 	}
 	
 	public static void main ( String[] args ) {
-		LoadDemo demo = new LoadDemo( args );
-		demo.execute();
+        try {
+            LoadDemo demo = new LoadDemo(args);
+            demo.execute();
+        } catch ( Exception e ) {
+            System.out.println( "Load Demo Failed \n" );
+			e.printStackTrace();
+        }
 	}
-	
+
 	private void createADocument() {
 		
 		if ( ids.size() >= maxNumberObjects ) return;
@@ -180,6 +175,7 @@ public class LoadDemo {
 		newguy.put( "a", rand.nextFloat() );
 		newguy.put( "b", rand.nextFloat() );
 		newguy.put( "c", rand.nextFloat() );
+        System.out.println( "Submitting document "+newguy );
 		pool.submitTask( hub.submit( "insert", newguy ) );
 		
 		ids.add( id );
@@ -224,10 +220,13 @@ public class LoadDemo {
 	}
 
 	public void execute() {
-        //while ( true ) {
+       // while ( true ) {
             try (Interval t = samples.set("total")) {
                 // get a random CRUD operation to execute
-                operations.run(rand.nextFloat());
+                //operations.run(rand.nextFloat());
+
+				createADocument();
+				System.out.println( this );
             }
         //}
 	}
