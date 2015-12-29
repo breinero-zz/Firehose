@@ -40,6 +40,10 @@ public abstract class Operation implements Callable {
 
     public long getStartTime() { return start; }
 
+    public void setSamples( SampleSet s ) {
+        this.samples = s;
+    }
+
     public void AttemptRetry() {
         if (policy != null &&  queue != null ) {
             RetryRequest retry = policy.getRetry(this);

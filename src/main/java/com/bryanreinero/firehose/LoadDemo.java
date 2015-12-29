@@ -9,9 +9,10 @@ import java.util.ArrayList;
 
 import com.bryanreinero.firehose.dao.DataAccessHub;
 import com.bryanreinero.firehose.dao.mongo.MongoDAO;
-import com.bryanreinero.firehose.dao.mongo.Read;
 import com.bryanreinero.firehose.dao.mongo.Write;
+import com.bryanreinero.firehose.dao.mongo.Read;
 
+import com.bryanreinero.util.OperationDescriptor;
 import com.bryanreinero.util.ThreadPool;
 import com.mongodb.MongoClient;
 import org.bson.Document;
@@ -20,7 +21,6 @@ import org.bson.types.ObjectId;
 import com.bryanreinero.firehose.circuitbreaker.BreakerBox;
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.metrics.Interval;
-import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
 
 import com.bryanreinero.firehose.markov.Chain;
@@ -34,7 +34,7 @@ public class LoadDemo {
 	private static final String appName = "LoadDemo";
 	private Application app = null;
     private ThreadPool pool = new ThreadPool( 1 );
-	private final SampleSet samples;
+
 	private final Statistics stats;
 	private DataAccessHub hub = null;
 	
@@ -110,45 +110,31 @@ public class LoadDemo {
             throw new Exception( "Application failed to initialize", e );
 		}
 
-        // Prepare the data access hub and
         // operation descriptors
         hub = new DataAccessHub();
         hub.addCluster( "test", new MongoClient() );
 
-		MongoDAO<Document, Write> descriptor  =  null;
+        MongoDAO<Document, Write> d = new MongoDAO<Document, Write>( "insert", "test", "firehose.data" );
+        d.setSamples( app.getSampleSet() );
+        hub.addDAO( d );
 
-		try {
-            descriptor = new MongoDAO<Document, Write>( "insert", "test", "firehose.data" );
-            descriptor.setOperationCtor( Write.class.getConstructor( Object.class, MongoDAO.class ) );
-            hub.addDAO( descriptor );
+        d =  new MongoDAO<Document, Write>( "update", "test", "firehose.data" ) ;
+        d.setSamples( app.getSampleSet() );
+        hub.addDAO( d );
 
-            descriptor = new MongoDAO<Document, Write>( "update", "test", "firehose.data" );
-            descriptor.setOperationCtor( Write.class.getConstructor( Object.class, MongoDAO.class ) );
-            hub.addDAO( descriptor );
+        d =  new MongoDAO<Document, Write>( "delete", "test", "firehose.data" ) ;
+        d.setSamples( app.getSampleSet() );
+        hub.addDAO( d );
 
-            descriptor = new MongoDAO<Document, Write>( "delete", "test", "firehose.data" );
-            descriptor.setOperationCtor( Write.class.getConstructor( Object.class, MongoDAO.class ) );
-            hub.addDAO( descriptor );
-
-        } catch (NoSuchMethodException e) {
-            throw new Exception("Failed to initialize MongoDAO named: "+descriptor.getName(), e);
-        }
-
-        MongoDAO<Document, Read> readDescriptor = new MongoDAO<Document, Read>( "query", "test", "firehose.data" );
-        try {
-            readDescriptor.setOperationCtor( Read.class.getConstructor( Object.class, MongoDAO.class ) );
-			hub.addDAO( readDescriptor );
-        } catch (NoSuchMethodException e) {
-            throw new Exception("Failed to initialize MongoDAO "+readDescriptor.getName(), e);
-        }
-
+        MongoDAO<Document, Read> r =  new MongoDAO<Document, Read>( "query", "test", "firehose.data" ) ;
+        r.setSamples( app.getSampleSet() );
+        hub.addDAO( r );
 
         // prepare the instrumentation
-		samples = app.getSampleSet();
-		stats = new Statistics(samples);
+		stats = new Statistics( app.getSampleSet() );
 		
 		// Next, set up the breaker box
-		breakerBox = new BreakerBox( samples );
+		breakerBox = new BreakerBox( app.getSampleSet() );
 		breakerBox.setBreaker("insert", "latency", 200000D );
 		breakerBox.start();
 
@@ -176,7 +162,8 @@ public class LoadDemo {
 		newguy.put( "b", rand.nextFloat() );
 		newguy.put( "c", rand.nextFloat() );
         System.out.println( "Submitting document "+newguy );
-		pool.submitTask( hub.submit( "insert", newguy ) );
+
+        pool.submitTask( new Write<Document>( newguy, (MongoDAO) hub.getDescriptor( "insert" ) ) );
 		
 		ids.add( id );
 	}
@@ -188,7 +175,7 @@ public class LoadDemo {
 				 ids.get( rand.nextInt( ids.size() ) )
 		);
 
-        pool.submitTask( hub.submit( "read", query ) );
+        pool.submitTask(  new Read<Document>( query, (MongoDAO) hub.getDescriptor( "read" ) ) );
 	}
 	
 	private void updateADocument() {
@@ -203,7 +190,7 @@ public class LoadDemo {
 		
 		Document set = new Document( "$set", new Document( "a", rand.nextFloat() ) );
 
-        pool.submitTask( hub.submit( "update", query ) );
+        pool.submitTask( new Write<Document>( query, (MongoDAO) hub.getDescriptor( "update" ) ) );
 	}
 	
 	private void deleteADocument() {
@@ -214,14 +201,14 @@ public class LoadDemo {
 		ObjectId id = ids.get( index );
 		Document query = new Document( "_id", id );
 
-        pool.submitTask( hub.submit( "delete", query ) );
+        pool.submitTask( new Write<Document>( query, (MongoDAO) hub.getDescriptor( "delete" ) ) );
 		
 		ids.remove( index );
 	}
 
 	public void execute() {
        // while ( true ) {
-            try (Interval t = samples.set("total")) {
+            try (Interval t = app.getSampleSet().set("total")) {
                 // get a random CRUD operation to execute
                 //operations.run(rand.nextFloat());
 

@@ -289,9 +289,9 @@ I've included a CSV file generator called RandomDSVGenerator so that you may tes
 
 ::
 
- $ mvn package 
- $ java -cp target/Firehose-<VERSION>.jar com.bryanreinero.firehose.test.RandomDSVGenerator -f test.csv -n 10000
- $ java -jar target/Firehose-<VERSION>.one-jar.jar -f test.csv -d , -ns test.firehose -h _id:objectid,count.0:float,count.1:float,name:string -t 20
+ $ gradle jar
+ $ java -cp build/libs/Firehose-<VERSION>-SNAPSHOT.jar com.bryanreinero.firehose.test.RandomDSVGenerator -f test.csv -n 10000
+ $ java -cp build/libs/Firehose-<VERSION>-SNAPSHOT.jar com.bryanreinero.firehose.Firehose -f test.csv -d , -h _id:objectid,count.0:float,count.1:float,name:string
 
 Why Firehose?
 -------------

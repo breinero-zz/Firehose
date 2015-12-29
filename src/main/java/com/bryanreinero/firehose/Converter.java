@@ -124,7 +124,7 @@ public class Converter {
     			array.set(index, value);
     		}
     		else {
-    			((DBObject)object).put( name, value);
+				((Document)object).put( name, value);
     		}
     	}
     }

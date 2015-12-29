@@ -17,6 +17,7 @@ import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
 import com.bryanreinero.util.*;
+import com.mongodb.MongoClient;
 import org.bson.Document;
 
 public class Firehose {
@@ -29,7 +30,6 @@ public class Firehose {
 	private AtomicInteger linesRead = new AtomicInteger(0);
 	private Converter converter = new Converter();
 	private BufferedReader br = null;
-	private MongoDAO dao = null;
 
 	private final DataAccessHub dataHub;
 	
@@ -38,54 +38,45 @@ public class Firehose {
 
 	private AtomicBoolean running = new AtomicBoolean( true );
 
-	private class UnitOfWork implements Callable<Result> {
-		@Override
-		public Result call() throws Exception {
-			String currentLine = null;
+	private void unitOfWork() {
 
-			try {
+		String currentLine = null;
 
-				try (Interval total = samples.set("total")) {
+		try ( Interval total = samples.set("total") ) {
 
 					// read the next line from source file
 					try (Interval readLine = samples.set("readline")) {
 						synchronized (br) {
 							currentLine = br.readLine();
 						}
-					}
+					} catch (IOException e1) {
+                        running.set(false);
+                        e1.printStackTrace();
+                    }
 
-					if (currentLine == null)
+                    if (currentLine == null)
 						running.set(false);
 
 					else {
-						linesRead.incrementAndGet();
+                        linesRead.incrementAndGet();
 
-						Document object = null;
+                        Document object = null;
 
-						// Create the DBObject for insertion
-						try (Interval build = samples.set("build")) {
-							object = converter.convert(currentLine);
-						}
+                        // Create the DBObject for insertion
+                        try (Interval build = samples.set("build")) {
+                            object = converter.convert(currentLine);
+                        }
 
-						// Insert the DBObject
-						Operation op = dataHub.submit( "insert", object );
-						threadPool.submitTask( op );
-
-					}
-				}
-			} catch (IOException e) {
-				running.set(false);
-				e.printStackTrace();
-			} finally {
-				synchronized (br) {
-					if (br != null) br.close();
-				}
-
-			}
-			return null;
-		};
+                        // Insert the new Document
+                        threadPool.submitTask(
+                                new Write<Document>(object, (MongoDAO) dataHub.getDescriptor("insert"))
+                        );
+                    }
+        }
 	}
-	
+
+
+
 	public Firehose ( String[] args ) throws Exception {
 		
 		// First step, set up the command line interface
@@ -130,22 +121,28 @@ public class Firehose {
 		samples = app.getSampleSet();
 		stats = new Statistics( samples );
 
+        // Initialize the connection to the DB
 		dataHub = new DataAccessHub();
-
-
-		// Firehose now needs to create the required operation descriptor
-		// and register it with the DataAccessHub
-		MongoDAO dao = new MongoDAO<Document, Write>("insert", "mongodb://localhost:27017/", "firehose.test");
-
-        dao.setOperationCtor( Write.class.getConstructor( Object.class, MongoDAO.class ) );
-		dataHub.addDAO( dao );
+		dataHub.addCluster( "test", new MongoClient() );
+        MongoDAO d  = new MongoDAO<Document, Write>( "insert", "test", "firehose.csv" );
+        d.setSamples( app.getSampleSet() );
+		dataHub.addDAO( d );
 
 		app.addPrinable(this);
 
 	}
 
     public void execute() {
-        while ( running.get()  ) threadPool.submitTask(new UnitOfWork());
+        while ( running.get()  )
+            unitOfWork() ;
+
+        synchronized (br) {
+            if (br != null) try {
+                br.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 	
 	@Override 
@@ -157,7 +154,6 @@ public class Firehose {
 		
 		if( verbose ) {
 			buf.append(", converter: "+converter);
-			buf.append(", dao: "+dao);
 			buf.append(", source: "+filename);
 		}
 		buf.append(" }");

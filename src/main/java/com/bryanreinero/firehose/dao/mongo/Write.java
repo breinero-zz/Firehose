@@ -1,42 +1,39 @@
 package com.bryanreinero.firehose.dao.mongo;
 
 import com.bryanreinero.firehose.metrics.Interval;
-
 import com.bryanreinero.util.Operation;
 import com.bryanreinero.util.Result;
 
 import com.mongodb.*;
 
 import org.bson.BsonDocument;
-import org.bson.Document;
 
 /**
  * Created by breinero on 10/11/15.
  */
-public class Write <T>  extends Operation {
+public class Write <T> extends Operation {
 
-    private final T document;
+    private T document;
     private final MongoDAO descriptor;
 
-    public Write( T query, MongoDAO descriptor ) {
+    public Write( T document,  MongoDAO descriptor ) {
         super( descriptor );
         this.descriptor = descriptor;
-        document = query;
+        this.document = document;
     }
 
     @Override
     public Result call() throws Exception {
         incAttempts();
 
-        try ( Interval i = samples.set( getName() ) ) {
-            System.out.println( "Inserting "+document );
+        try ( Interval i = descriptor.getSamples().set( getName() ) ) {
             descriptor.getCollection().insertOne( document );
         }
         catch ( MongoWriteException mwe ) {
             WriteError error = mwe.getError();
 
-            if( error.getCategory().equals( ErrorCategory.DUPLICATE_KEY ) )
-                AttemptRetry();
+            //if( error.getCategory().equals( ErrorCategory.DUPLICATE_KEY ) )
+
 
             if (error.getCategory().equals(ErrorCategory.EXECUTION_TIMEOUT)) {
                 // May be eligible for a retry

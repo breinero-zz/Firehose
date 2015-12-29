@@ -23,14 +23,15 @@ configurations {
 dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.11'
     compile "org.mongodb:mongo-java-driver:${javaDriverVersion}"
+    compile "org.apache.commons:commons-math3:3.0"
+    compile "commons-cli:commons-cli:1.2"
 }
 
 jar {
     zip64 true
-    dependsOn configurations.runtime
 
     from {
-        ( configurations.runtime - configurations.provided).collect {
+        configurations.compile.collect {
             it.isDirectory() ? it : zipTree(it)
         }
     } {

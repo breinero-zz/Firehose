@@ -3,6 +3,7 @@ package com.bryanreinero.firehose.dao.mongo;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.util.Operation;
 import com.mongodb.*;
+import org.bson.Document;
 
 /**
  * Created by breinero on 10/13/15.
@@ -10,10 +11,9 @@ import com.mongodb.*;
 public class Read <T> extends Operation  {
 
     private final MongoDAO descriptor;
-    private final T query;
+    private final Document query;
 
-    public Read( T query, MongoDAO descriptor ) {
-
+    public Read( Document query, MongoDAO descriptor ) {
         super( descriptor );
         this.descriptor = descriptor;
         this.query = query;
@@ -25,7 +25,7 @@ public class Read <T> extends Operation  {
 
         Iterable<T> it = null;
         try ( Interval i = samples.set( getName() ) ) {
-            it = descriptor.getCollection().find(query.getClass());
+            descriptor.getCollection().find( query );
 
         } catch (MongoTimeoutException mte) {
             AttemptRetry();

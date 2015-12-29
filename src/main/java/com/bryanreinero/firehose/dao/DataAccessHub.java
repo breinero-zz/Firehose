@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.bryanreinero.firehose.dao.mongo.MongoDAO;
-import com.bryanreinero.util.Operation;
 import com.bryanreinero.util.OperationDescriptor;
 
 import com.mongodb.MongoClient;
@@ -25,9 +24,6 @@ public class DataAccessHub {
 	
 	private final Map<String, MongoClient> clusters = new HashMap<String, MongoClient>();
 	private final Map<String, OperationDescriptor> descriptors = new HashMap<String, OperationDescriptor>();
-
-
-	private final Map<String, Class<? extends Operation>> operations = new HashMap<String, Class<? extends Operation>>();
 	
 	/**
 	 *
@@ -53,7 +49,7 @@ public class DataAccessHub {
         descriptors.put(name, dao);
     }
 
-	public Operation submit( String name, Object... o ) {
-        return descriptors.get( name ).getOperation( o );
+	public OperationDescriptor getDescriptor( String name  ) {
+        return descriptors.get( name );
     }
 }
