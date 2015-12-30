@@ -36,7 +36,6 @@ public class Application {
         }
 
         try {
-            cli.addOptions( name );
             cli.parse( args );
             workers = new ThreadPool( numThreads );
         } catch (Exception e) {

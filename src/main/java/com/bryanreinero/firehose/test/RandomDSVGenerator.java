@@ -13,7 +13,7 @@ import com.bryanreinero.firehose.cli.CommandLineInterface;
 
 public class RandomDSVGenerator {
 	
-	private final static String appName = "RandomDSVGenerator"; 
+	private final static String appName = "RandomDSVGenerator.json";
 	private int totalLines;
 	private BufferedWriter bw = null;
 	private char delimiter = ',';

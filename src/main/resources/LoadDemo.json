@@ -1,0 +1,14 @@
+{
+    "CommandLineConfig": {
+         "options": [
+            {
+                "op": "n",
+                "longOpt" : "maxObj",
+                "name": "maxNumObjects",
+                "description":"Max number objects in collection",
+                "required": true,
+                "args" : 1
+            }
+         ]
+    }
+}

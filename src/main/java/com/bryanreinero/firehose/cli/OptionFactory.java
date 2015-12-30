@@ -14,6 +14,8 @@ import java.util.List;
 
 public class OptionFactory {
 
+	public static String JSON_FIELD_NAME = "CommandLineConfig";
+
 	private interface Setter {
 		void set(Option op, Object value);
 	}
@@ -146,11 +148,11 @@ public class OptionFactory {
 
 	}
 
-	public static Options parseJSON( String appName, String json ) {
+	public static Options parseJSON( String json ) {
 		Options options = new Options();
 		
 		DBObject config = (DBObject) JSON.parse(json);
-		DBObject appOptions = (DBObject)config.get(appName);
+		DBObject appOptions = (DBObject)config.get(JSON_FIELD_NAME);
 		
 		if( appOptions == null )
 			return options;

@@ -26,11 +26,11 @@ public class CommandLineInterface {
 	
 	public void addOptions( String appName ) throws Exception  {
 		
-		InputStream is = CommandLineInterface.class.getClassLoader().getResourceAsStream("options.json");
+		InputStream is = CommandLineInterface.class.getClassLoader().getResourceAsStream(appName+".json");
 		
 		try {
 			
-			Options newOptions = OptionFactory.parseJSON( appName, OptionFactory.ingest( is ) );
+			Options newOptions = OptionFactory.parseJSON( OptionFactory.ingest( is ) );
 			
 			Iterator<Option> it = newOptions.getOptions().iterator();
 			while( it.hasNext() )

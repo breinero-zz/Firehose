@@ -2,25 +2,20 @@
 
 Should the Firehose use dependency injection to load the DAO with a circuit-breaker, or other rate limiter? It makes sense to me as on the hub is initialized the user can then just send requests by name. Why might this dependency injection not be appropriate? It seems straight forward that the DataAccessHub should have this logic. So thinking in terms of application design and a classs hierarchy , how should the classes fit?
 
-Metrics
--------
-
+##Metrics
 Keeps rate measurements and number of failures on a per operation basis. There is a need to report metrics at different hierarchical layers, i.e. operation, collection, database and cluster 
 
-Hub
----
+##Hub
 Has a Map of DataAccessObjects 
 
-DataAccessObject 
-----------------
+##DataAccessObject
 - Knows how to map objects to the database operations
 - Has a retry / timeout strategy per operation 
 - Has a circuit breaker per operation 
 
 DAO interface has an execute method with one parameter, the DAORequestObject and returns a DAOResultObject
 
-DAORequestObject
-----------------
+##DAORequestObject
 - Subclassed per database API
 - Request can be of operation types [ read | write | update | delete ]
 - The cluster namespace identifier from which the DataAccessHub and DAO identify and target the right datastore instance.
@@ -28,8 +23,7 @@ DAORequestObject
 
 Why? Because either the DAO or the DAORequestObject needs to know how to enforce schema validation. Consider that the Firehose application gets and instance of the DAORequestObject from the DAO itself.
 
-DAOResultObject
----------------
+##DAOResultObject
 A standardized object that the Firehose application uses to determine if the request was successful or not.
 - Database agnostic error reporting on timeouts and retry failures. 
 
