@@ -1,19 +1,13 @@
 package com.bryanreinero.firehose.cli;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.UnknownHostException;
+
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.cli.CommandLine;
-import org.apache.commons.cli.CommandLineParser;
-import org.apache.commons.cli.GnuParser;
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Option;
-import org.apache.commons.cli.Options;
+import org.apache.commons.cli.*;
 
 public class CommandLineInterface {
 
@@ -51,17 +45,20 @@ public class CommandLineInterface {
 		formatter.printHelp("Firehose", options);
 	}
 
-	public void parse(String[] args) throws UnknownHostException,
-			FileNotFoundException, org.apache.commons.cli.ParseException, Exception {
+	public void parse(String[] args) throws ParseException {
 		CommandLine line = parser.parse(options, args);
 
 		for (Option option : line.getOptions())
-			if (line.hasOption(option.getOpt())) {
-				try { 
-					callbacks.get(option.getOpt()).handle(option.getValues());
-				} catch( Exception e ) {
-					throw new Exception("Could not parse opt "+option.getOpt(), e);
+			if ( line.hasOption( option.getOpt() ) ) {
+				try {
+					callbacks.get( option.getOpt() ).handle(option.getValues());
+				} catch (Exception e) {
+					throw new IllegalArgumentException("Could not parse opt "+option.getOpt(), e);
 				}
 			}
+	}
+
+	public void addOption( Option o ) {
+		options.addOption( o );
 	}
 }

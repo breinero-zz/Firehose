@@ -5,7 +5,7 @@ A document, query by example
 
 ```
 {
-    mongoURI: "String",
+    cluster: "String",
     namespace: "database.collection",
     filter: {},
     readPref: [],
@@ -15,15 +15,12 @@ A document, query by example
 ```
 
 ##Modifiers
-
 - sort
 - skip
 - limit
 - comment
 - explain
 - hint
-
-
 
 Name	Description
 $comment

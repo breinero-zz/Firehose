@@ -1,7 +1,5 @@
 package com.bryanreinero.firehose;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Random;
 import java.util.Vector;
 import java.util.List;
@@ -12,7 +10,6 @@ import com.bryanreinero.firehose.dao.mongo.MongoDAO;
 import com.bryanreinero.firehose.dao.mongo.Write;
 import com.bryanreinero.firehose.dao.mongo.Read;
 
-import com.bryanreinero.util.OperationDescriptor;
 import com.bryanreinero.util.ThreadPool;
 import com.mongodb.MongoClient;
 import org.bson.Document;
@@ -88,27 +85,29 @@ public class LoadDemo {
 		operations.setEvent( events );
 		
 		// First step, set up the command line interface
-		Map<String, CallBack> myCallBacks = new HashMap<String, CallBack>();
-		// custom command line callback for delimiter
-				myCallBacks.put("n", new CallBack() {
-					@Override
-					public void handle(String[] values) throws Exception {
-						try { 
-							maxNumberObjects  = Integer.parseInt( values[0] );
-							ids = new Vector( maxNumberObjects );
-						}catch (Exception e) {
-							throw new Exception(
-                                    "CLI Callback to set max number of objects failed ", e );
-						}
-					}
-				});
 				
-		// Second step, set up the application logic, including the app queue
+
+		app = new Application( appName );
+		app.setCommandLineInterfaceCallback( "n", new CallBack() {
+			@Override
+			public void handle(String[] values) throws Exception {
+				try {
+					maxNumberObjects  = Integer.parseInt( values[0] );
+					ids = new Vector( maxNumberObjects );
+				}catch (Exception e) {
+					throw new Exception(
+							"CLI Callback to set max number of objects failed ", e );
+				}
+			}
+		});
+
 		try {
-			app = Application.ApplicationFactory.getApplication( appName, args, myCallBacks);
+			app.parseCommandLineArgs( args );
 		} catch (Exception e) {
             throw new Exception( "Application failed to initialize", e );
 		}
+
+		// Second step, set up the application logic, including the app queue
 
         // operation descriptors
         hub = new DataAccessHub();
@@ -207,7 +206,7 @@ public class LoadDemo {
 	}
 
 	public void execute() {
-       // while ( true ) {
+       while ( true ) {
             try (Interval t = app.getSampleSet().set("total")) {
                 // get a random CRUD operation to execute
                 //operations.run(rand.nextFloat());
@@ -215,7 +214,7 @@ public class LoadDemo {
 				createADocument();
 				System.out.println( this );
             }
-        //}
+       }
 	}
 	
 	@Override 

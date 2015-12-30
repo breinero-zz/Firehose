@@ -1,91 +1,64 @@
 package com.bryanreinero.util;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
-import com.bryanreinero.firehose.dao.mongo.MongoDAO;
-import org.apache.commons.cli.MissingOptionException;
-
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;
 import com.bryanreinero.firehose.metrics.SampleSet;
-import com.mongodb.MongoClient;
-import com.mongodb.ServerAddress;
+
+import org.apache.commons.cli.Option;
 
 public class Application {
-	
-	private final static String appName = "ApplicationFramework";
-	private final ThreadPool workers;
+
+    private final String name;
+	private ThreadPool workers;
 	private final CommandLineInterface cli;
 	private Printer printer = new Printer( DEFAULT_PRINT_INTERVAL );
 	private final SampleSet samples;
-	private MongoDAO dao = null;
 	
 	public static final int DEFAULT_PRINT_INTERVAL = 1;
 	public static final long DEFAULT_REPORTING_INTERVAL = 5;
 	
-	private int numThreads = 1; 
-	private List<ServerAddress> adresses = null;
-	private String collectionName = null;
-	private String dbname = null;
+	private int numThreads = 1;
 
-	
-	
-	public static class ApplicationFactory {
-		public static Application getApplication( String name, String[] args, Map<String, CallBack> cbs ) throws Exception {
-			try {
-				Application w = new Application();
-				
-				w.cli.addOptions(name);
-				//add custom callbacks
-				if( cbs != null && ! cbs.isEmpty() ) 
-					for ( Entry<String, CallBack> e : cbs.entrySet() )
-						w.cli.addCallBack(e.getKey(), e.getValue());
-				
-				try { 
-					// the CLI is ready to parse the command line
-					w.cli.parse(args);
-				} catch ( MissingOptionException e) {
-					w.cli.printHelp();
-					throw new Exception( "bad options", e );
-				}
-				
-				MongoClient client;
-				if( w.adresses == null || w.adresses.isEmpty() ) 
-					client = new MongoClient();
-				else
-					client = new MongoClient(w.adresses);
-				
-				w.dao = new MongoDAO( "TestOperation", "localhost", w.dbname+"."+w.collectionName );
-
-				return w;
-			} catch ( Exception e )  {
-				throw new Exception( "Can't initialize Worker", e );
-			}
-		}
-	}
-	
 	public SampleSet getSampleSet() {
 		return samples;
 	}
 
-	public CommandLineInterface getCli() {
-		return cli;
-	}
-
-	public void addCommandLineCallback(String key, CallBack cb ) {
+	public void setCommandLineInterfaceCallback(String key, CallBack cb ) {
 		cli.addCallBack(key, cb);
 	}
 
-	private Application() throws Exception {
+    public void parseCommandLineArgs ( String[] args ) {
+
+        try {
+            cli.addOptions( name );
+        } catch (Exception e) {
+            throw new IllegalStateException ( "Failed to initialize application command line configuration. ", e );
+        }
+
+        try {
+            cli.addOptions( name );
+            cli.parse( args );
+            workers = new ThreadPool( numThreads );
+        } catch (Exception e) {
+            throw new IllegalStateException ( "Failed to process command line arguments. ", e );
+        }
+    }
+
+	public Application(String name) {
+        this.name = name;
 		samples = new SampleSet();
 		samples.setTimeToLive(DEFAULT_REPORTING_INTERVAL);
 
 		// prep the CLI with a set of 
 		// standard CL option handlers
 		cli = new CommandLineInterface();
-		cli.addOptions(appName);
+
+		Option o = new Option( "t", null ) ;
+		o.setLongOpt("threads");
+		o.setArgName( "number" );
+		o.setDescription( "number of worker threads. Default 1" );
+        o.setArgs( 1 );
+        cli.addOption( o );
 		cli.addCallBack("t", new CallBack() {
 
 			@Override
@@ -94,6 +67,12 @@ public class Application {
 			}
 		});
 
+        o = new Option( "ri", null ) ;
+        o.setLongOpt("reportingInterval");
+        o.setArgName( "interval" );
+        o.setDescription(  "average stats over an time interval of i milleseconds" );
+        o.setArgs( 1 );
+        cli.addOption( o );
 		cli.addCallBack("ri", new CallBack() {
 
 			@Override
@@ -102,7 +81,13 @@ public class Application {
 			}
 		});
 
-		cli.addCallBack("pi", new CallBack() {
+        o = new Option( "pi", null ) ;
+        o.setLongOpt("printInterval");
+        o.setArgName( "interval" );
+        o.setDescription( "print output every n seconds" );
+        o.setArgs( 1 );
+        cli.addOption( o );
+        cli.addCallBack("pi", new CallBack() {
 
 			@Override
 			public void handle(String[] values) {
@@ -110,6 +95,11 @@ public class Application {
 			}
 		});
 
+        o = new Option( "cr", null ) ;
+        o.setLongOpt("noPretty");
+        o.setArgName( "format" );
+        o.setDescription( "print out in CR-delimited lines. Default is console mode pretty printing, when possible" );
+        cli.addOption( o );
 		cli.addCallBack("cr", new CallBack() {
 
 			@Override
@@ -118,37 +108,10 @@ public class Application {
 			}
 
 		});
+    }
 
-		// Mongos'es
-		cli.addCallBack("m", new CallBack() {
-
-			@Override
-			public void handle(String[] values) {
-				//adresses = MongoDAO.getServerAddresses(values);
-			}
-
-		});
-
-		// target namespace
-		cli.addCallBack("ns", new CallBack() {
-
-			@Override
-			public void handle(String[] values) {
-				collectionName = values[1];
-				dbname = values[0];
-			}
-
-		});
-
-		workers = new ThreadPool( numThreads );
-	}
-
-	public int getNumThreads() {
+    public int getNumThreads() {
 		return this.numThreads;
-	}
-
-	public MongoDAO getDAO() {
-		return dao;
 	}
 
 	public void addPrinable(Object o) {

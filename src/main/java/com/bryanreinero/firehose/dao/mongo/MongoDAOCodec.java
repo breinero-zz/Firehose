@@ -20,12 +20,6 @@ public class MongoDAOCodec implements Codec<MongoDAO> {
                 bsonReader.readString( "namespace" )
         );
 
-        try {
-            Class c = Class.forName( bsonReader.readString("class") );
-            descriptor.setOperationCtor( c.getConstructor() );
-        } catch (ClassNotFoundException | NoSuchMethodException e) {
-            throw new IllegalArgumentException( "Can't build requested OperationDescriptor. ", e  );
-        }
         return descriptor;
     }
 

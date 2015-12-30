@@ -147,7 +147,7 @@ public class OptionFactory {
 	}
 
 	public static Options parseJSON( String appName, String json ) {
-		 Options options = new Options();
+		Options options = new Options();
 		
 		DBObject config = (DBObject) JSON.parse(json);
 		DBObject appOptions = (DBObject)config.get(appName);

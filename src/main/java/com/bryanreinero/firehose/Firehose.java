@@ -3,9 +3,7 @@ package com.bryanreinero.firehose;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.Callable;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -68,33 +66,36 @@ public class Firehose {
                         }
 
                         // Insert the new Document
-                        threadPool.submitTask(
+                        app.getThreadPool().submitTask(
                                 new Write<Document>(object, (MongoDAO) dataHub.getDescriptor("insert"))
                         );
                     }
         }
 	}
 
+    public void parseCommandLineArgs( String[] args ) {
+        app.parseCommandLineArgs( args );
+    }
 
+	public Firehose () {
 
-	public Firehose ( String[] args ) throws Exception {
-		
-		// First step, set up the command line interface
-		Map<String, CallBack> myCallBacks = new HashMap<String, CallBack>();
-		
-		// custom command line callback for csv conversion
-		myCallBacks.put("h", new CallBack() {
-			@Override
-			public void handle(String[] values) {
-				for (String column : values) {
-					String[] s = column.split(":");
-					converter.addField( s[0], Transformer.getTransformer( s[1] ) );
-				}
-			}
-		});
-		
+		app = new Application( appName );
+
+        // First step, set up the command line interface
+        app.setCommandLineInterfaceCallback(
+                "h", new CallBack() {
+                    @Override
+                    public void handle(String[] values) {
+                        for (String column : values) {
+                            String[] s = column.split(":");
+                            converter.addField( s[0], Transformer.getTransformer( s[1] ) );
+                        }
+                    }
+                }
+        );
+
 		// custom command line callback for delimiter
-		myCallBacks.put("d", new CallBack() {
+        app.setCommandLineInterfaceCallback( "d", new CallBack() {
 			@Override
 			public void handle(String[] values) {
 				converter.setDelimiter( values[0] );
@@ -102,7 +103,7 @@ public class Firehose {
 		});
 
 		// custom command line callback for delimiter
-		myCallBacks.put("f", new CallBack() {
+        app.setCommandLineInterfaceCallback( "f", new CallBack() {
 			@Override
 			public void handle(String[] values) {
 				filename  = values[0];
@@ -115,8 +116,6 @@ public class Firehose {
 			}
 		});
 
-		// Second step, set up the application logic, including the app queue
-		app = Application.ApplicationFactory.getApplication( appName, args, myCallBacks);
 		threadPool = app.getThreadPool();
 		samples = app.getSampleSet();
 		stats = new Statistics( samples );
@@ -129,8 +128,7 @@ public class Firehose {
 		dataHub.addDAO( d );
 
 		app.addPrinable(this);
-
-	}
+    }
 
     public void execute() {
         while ( running.get()  )
@@ -163,7 +161,8 @@ public class Firehose {
     public static void main( String[] args ) {
     	
     	try {
-    		Firehose f = new Firehose( args );
+    		Firehose f = new Firehose();
+            f.parseCommandLineArgs( args );
 			f.execute();
 		} 
 		catch (Exception e) {
