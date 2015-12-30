@@ -1,0 +1,29 @@
+{
+  "CommandLineConfig": {
+    "options": [
+      {
+        "op": "f",
+        "longOpt": "file",
+        "name": "filepath",
+        "description": "filename to import",
+        "required": true,
+        "args": 1
+      },
+      {
+        "op": "n",
+        "longOpt": "lines",
+        "name": "int",
+        "required": true,
+        "args": 1,
+        "description": "number of lines to write to the csv"
+      },
+      {
+        "op": "d",
+        "longOpt": "delimiter",
+        "name": "delimeter",
+        "description": "the value separator used to separate columns. Default ','",
+        "args": 1
+      }
+    ]
+  }
+}

@@ -1,37 +1,33 @@
+#Query Operation
 
 ##Filter
 
 A document, query by example
+Inherits attributes from the operation document
 
 ```
 {
     cluster: "String",
     namespace: "database.collection",
-    filter: {},
-    readPref: [],
-    modifier: []
-    auth:{},
+    query: {},
+    readPrefs: [],
+    modifiers: [],
+    projection: {}
 }
 ```
 
 ##Modifiers
-- sort
-- skip
-- limit
-- comment
-- explain
-- hint
-
-Name	Description
-$comment
-$explain
-$hint
-$maxScan
-$maxTimeMS
-$max
-$min
-$orderby
-$returnKey
-$showDiskLoc
-$snapshot
-$query
+- comment type: String
+- explain type: integer 1 for true
+- hint type: doc, example: { "index name" : 1  }
+- limit type: integer
+- maxScan type: integer
+- maxTimeMS type: integer
+- max type: integer, example: { field: <number> }  description: requires index
+- min type: integer, example: { field: <number> }  description: requires index
+- natural type: +-1
+- orderby type: doc. example: { field: orfer }
+- returnKey type: boolean
+- showDiskLoc type: boolean
+- skip type: integer
+- snapshot type: boolean
