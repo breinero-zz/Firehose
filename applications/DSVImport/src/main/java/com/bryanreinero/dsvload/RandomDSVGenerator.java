@@ -1,4 +1,4 @@
-package com.bryanreinero.firehose.test;
+package com.bryanreinero.dsvload;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -13,7 +13,7 @@ import com.bryanreinero.firehose.cli.CommandLineInterface;
 
 public class RandomDSVGenerator {
 	
-	private final static String appName = "RandomDSVGenerator.json";
+	private final static String appName = "RandomDSVGenerator";
 	private int totalLines;
 	private BufferedWriter bw = null;
 	private char delimiter = ',';

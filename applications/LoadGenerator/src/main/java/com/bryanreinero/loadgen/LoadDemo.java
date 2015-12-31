@@ -1,4 +1,4 @@
-package com.bryanreinero.firehose;
+package com.bryanreinero.loadgen;
 
 import java.util.Random;
 import java.util.Vector;

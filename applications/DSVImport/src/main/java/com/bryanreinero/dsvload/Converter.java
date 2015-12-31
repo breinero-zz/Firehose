@@ -1,4 +1,4 @@
-package com.bryanreinero.firehose;
+package com.bryanreinero.dsvload;
 
 import java.util.AbstractMap.SimpleEntry;
 import java.util.LinkedHashMap;
@@ -9,9 +9,8 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 
-import com.bryanreinero.firehose.Transformer.Type;
-import com.mongodb.DBObject;
-import com.mongodb.BasicDBObject;
+import com.bryanreinero.dsvload.Transformer.Type;
+
 import org.bson.Document;
 
 public class Converter {
