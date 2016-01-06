@@ -1,14 +1,30 @@
 {
     "CommandLineConfig": {
          "options": [
-            {
-                "op": "n",
-                "longOpt" : "maxObj",
-                "name": "maxNumObjects",
-                "description":"Max number objects in collection",
-                "required": true,
-                "args" : 1
-            }
+           {
+             "op": "n",
+             "longOpt": "maxObj",
+             "name": "maxNumObjects",
+             "description": "Max number objects in collection",
+             "required": true,
+             "args": 1
+           },
+           {
+             "op": "db",
+             "longOpt" : "database",
+             "name": "controlDB",
+             "description": "The test control database, a  MongoDB URI to connect to. Default localhost:27017",
+             "required": true,
+             "args" : 1
+           }
          ]
+    },
+  "dataStores": [
+    {
+      "name": "localhost",
+      "type": "MongoDB",
+      "uri": "MongoDB://localhost:27017/"
     }
+  ],
+  "operations": []
 }

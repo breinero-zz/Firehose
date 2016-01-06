@@ -40,3 +40,52 @@ A standardized object that the Firehose application uses to determine if the req
 #####Methods
 - isOK() returns boolean //ask Jeff why they removed this from the driver API
 - error returns error code which can be used by the application client in a switch or 'or' clause
+
+
+###Codec
+
+####Datastore
+
+```
+{
+    _id: <String>,
+    type: <String["mongodb"]>
+    uri: <URI>,
+}
+```
+####OperationDescriptor
+
+```
+{
+    name: "String",
+    retryPolicy: {},
+    operation: {}
+}
+```
+
+####RetryPolicy
+
+```
+{
+    maxRetries: <Intger>,
+    maxDuration: <IntegerMS>,
+    period: <IntegerMS>,
+    type: <String[regularInterval|ExponentialBackoff]>
+}
+```
+
+####MongoDAO
+
+Extends schema from OperationDescriptor
+
+```
+{
+    type: <String[insert | update | query | delete | command]>,
+    namespace: <String[database.collection]>,
+    query: {},
+    projection: {},
+    update; {},
+    readPref: {},
+    writeConcert: {}
+}
+```

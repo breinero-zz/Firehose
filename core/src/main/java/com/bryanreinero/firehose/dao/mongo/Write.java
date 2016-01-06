@@ -24,16 +24,18 @@ public class Write <T> extends Operation {
 
     @Override
     public Result call() throws Exception {
+        Result r = new Result( false );
         incAttempts();
 
-        try ( Interval i = descriptor.getSamples().set( getName() ) ) {
+         try ( Interval i = descriptor.getSamples().set( getName() ) ) {
             descriptor.getCollection().insertOne( document );
         }
         catch ( MongoWriteException mwe ) {
             WriteError error = mwe.getError();
 
-            //if( error.getCategory().equals( ErrorCategory.DUPLICATE_KEY ) )
-
+            if( error.getCategory().equals( ErrorCategory.DUPLICATE_KEY ) ) {
+                r.setFailed( "Duplicate key error "+error.getMessage() );
+            }
 
             if (error.getCategory().equals(ErrorCategory.EXECUTION_TIMEOUT)) {
                 // May be eligible for a retry
@@ -48,15 +50,14 @@ public class Write <T> extends Operation {
             com.mongodb.bulk.WriteConcernError error;
             error = mwce.getWriteConcernError();
             BsonDocument details = error.getDetails();
+            r.setFailed( "Raad failed. "+details.toString() );
 
         } catch ( MongoTimeoutException mte ) {
             AttemptRetry();
         } catch (MongoException me) {
-
-            //TODO: something betta than this
-            me.printStackTrace();
+            r.setFailed( "Raad failed. "+me.toString());
         }
 
-        return null;
+        return r;
     }
 }
