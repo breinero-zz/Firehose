@@ -3,7 +3,6 @@ group 'bryanreinero'
 ext.javaDriverVersion = '3.0.0'
 ext.buildDir = './build'
 
-
 allprojects {
     apply plugin: 'java'
     apply plugin: 'application'
@@ -34,8 +33,11 @@ configure(subprojects.findAll { it.name.contains('applications/') }) {
 
 project( 'core' ) {
 
+    println System.properties['java.home'];
+
     dependencies {
         testCompile group: 'junit', name: 'junit', version: '4.11'
+        compile files("${System.properties['java.home']}/../lib/tools.jar")
         compile "org.mongodb:mongo-java-driver:${javaDriverVersion}"
         compile "org.apache.commons:commons-math3:3.0"
         compile "commons-cli:commons-cli:1.2"

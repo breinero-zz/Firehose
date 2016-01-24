@@ -9,7 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.dao.DataAccessHub;
+import com.bryanreinero.firehose.dao.DataStore;
 import com.bryanreinero.firehose.dao.mongo.MongoDAO;
+import com.bryanreinero.firehose.dao.mongo.Read;
 import com.bryanreinero.firehose.dao.mongo.Write;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
@@ -17,6 +19,8 @@ import com.bryanreinero.firehose.metrics.Statistics;
 import com.bryanreinero.util.*;
 import com.mongodb.MongoClient;
 import org.bson.Document;
+
+import javax.naming.NamingException;
 
 public class Firehose {
 	
@@ -29,12 +33,15 @@ public class Firehose {
 	private Converter converter = new Converter();
 	private BufferedReader br = null;
 
-	private final DataAccessHub dataHub;
-	
+	private final String SFCabDB = "127.0.0.1:27017";
+
 	private Boolean verbose = false;
 	private String filename = null;
 
 	private AtomicBoolean running = new AtomicBoolean( true );
+
+    private MongoDAO<MongoDAO, Read> logDAO
+            = new MongoDAO( "insert", "SFCabDB", "SFCab.GPSLog", MongoDAO.class );
 
 	private void unitOfWork() {
 
@@ -65,10 +72,13 @@ public class Firehose {
                             object = converter.convert(currentLine);
                         }
 
+                        Write<Document> op =  new Write<Document>(
+                                object,
+                                (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "insert" ) );
+                        op.setSamples( app.getSampleSet() );
+
                         // Insert the new Document
-                        app.getThreadPool().submitTask(
-                                new Write<Document>(object, (MongoDAO) dataHub.getDescriptor("insert"))
-                        );
+                        app.getThreadPool().submitTask( op );
                     }
         }
 	}
@@ -77,7 +87,7 @@ public class Firehose {
         app.parseCommandLineArgs( args );
     }
 
-	public Firehose () {
+	public Firehose () throws Exception {
 
 		app = new Application( appName );
 
@@ -121,11 +131,12 @@ public class Firehose {
 		stats = new Statistics( samples );
 
         // Initialize the connection to the DB
-		dataHub = new DataAccessHub();
-		dataHub.addCluster( "test", new MongoClient() );
-        MongoDAO d  = new MongoDAO<Document, Write>( "insert", "test", "firehose.csv" );
-        d.setSamples( app.getSampleSet() );
-		dataHub.addDAO( d );
+        DataAccessHub.INSTANCE.setDataStore(
+                new DataStore( "SFCabDB", appName, SFCabDB, DataStore.Type.mongodb )
+        );
+
+        logDAO.setSamples( app.getSampleSet() );
+        DataAccessHub.INSTANCE.setDao( logDAO );
 
 		app.addPrinable(this);
     }
