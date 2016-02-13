@@ -1,8 +1,7 @@
 .idea/
 .gradle/
 gradle/
-build/
-Firehose.iml
+
 test.csv
 
  User-specific stuff:
@@ -19,4 +18,5 @@ test.csv
 .idea/dynamic.xml
 .idea/uiDesigner.xml
 
-*.iml
+**build
+**.iml

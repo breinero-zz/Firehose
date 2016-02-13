@@ -2,7 +2,9 @@ package com.bryanreinero.firehose.dao.mongo;
 
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.util.Operation;
+import com.bryanreinero.util.Result;
 import com.mongodb.*;
+import com.mongodb.client.MongoCollection;
 import org.bson.Document;
 
 /**
@@ -20,25 +22,25 @@ public class Read <T> extends Operation  {
     }
 
     @Override
-    public Iterable<T> call() throws Exception {
+    public Result call() throws Exception {
+        Result r = new Result( false );
         incAttempts();
 
-        Iterable<T> it = null;
+        Iterable<T> it;
         try ( Interval i = samples.set( getName() ) ) {
-            descriptor.getCollection().find( query );
+            MongoCollection<T> c = descriptor.getCollection();
+            it = c.find( query );
+            r.setResults( it );
 
         } catch (MongoTimeoutException mte) {
             AttemptRetry();
 
         } catch ( MongoQueryException mqe ) {
-            //TODO: something betta than this
-            mqe.printStackTrace();
+            r.setFailed( "Read failed. "+mqe );
         }
         catch (MongoException me) {
-
-            //TODO: something betta than this
-            me.printStackTrace();
+            r.setFailed( "Read failed. "+me );
         }
-        return it;
+        return r;
     }
 }

@@ -1,5 +1,6 @@
 package com.bryanreinero.dsvload;
 
+import java.util.Date;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -24,6 +25,7 @@ public abstract class Transformer <V extends Object> {
     public static final String TYPE_DOUBLE = "double";
     public static final String TYPE_BINARY = "binary";
     public static final String TYPE_Object = "object";
+    public static final String TYPE_Date = "date";
     
     public static enum Type {
     	ArrayType( Type_Array ),
@@ -33,7 +35,8 @@ public abstract class Transformer <V extends Object> {
     	FloatType(TYPE_FLOAT),
     	DoubleType(TYPE_DOUBLE),
     	BinaryType(TYPE_BINARY),
-    	ObjectType(TYPE_Object);
+    	ObjectType(TYPE_Object),
+        DateType(TYPE_Date);
     	
     	private final String name; 
     	private Type ( String name ) { this.name = name; }  
@@ -54,6 +57,8 @@ public abstract class Transformer <V extends Object> {
     			return BinaryType;
     		if( type.compareTo(TYPE_Object) == 0 )
     			return BinaryType;
+            if( type.compareTo(TYPE_Date) == 0 )
+                return DateType;
     		return null;
     	}
     }
@@ -139,6 +144,20 @@ public abstract class Transformer <V extends Object> {
                 	return TYPE_DOUBLE;
                 }
             }
+        );
+
+        transformers.put( TYPE_Date ,
+                new Transformer <Date> () {
+                    @Override
+                    public Date transform( String value ) {
+                        return new Date( Long.parseLong( value )  * 1000 );
+                    }
+
+                    @Override
+                    public String toString() {
+                        return TYPE_Date;
+                    }
+                }
         );
     }
 

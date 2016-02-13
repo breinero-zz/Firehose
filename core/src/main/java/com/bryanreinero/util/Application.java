@@ -2,21 +2,33 @@ package com.bryanreinero.util;
 
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;
+
 import com.bryanreinero.firehose.metrics.SampleSet;
 
 import org.apache.commons.cli.Option;
 
+import org.bson.Document;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+
+import javax.naming.NamingException;
+
 public class Application {
 
+    private Document configuration ;
     private final String name;
 	private ThreadPool workers;
 	private final CommandLineInterface cli;
+
 	private Printer printer = new Printer( DEFAULT_PRINT_INTERVAL );
 	private final SampleSet samples;
-	
+
 	public static final int DEFAULT_PRINT_INTERVAL = 1;
 	public static final long DEFAULT_REPORTING_INTERVAL = 5;
-	
+
 	private int numThreads = 1;
 
 	public SampleSet getSampleSet() {
@@ -43,7 +55,7 @@ public class Application {
         }
     }
 
-	public Application(String name) {
+	public Application(String name) throws NamingException {
         this.name = name;
 		samples = new SampleSet();
 		samples.setTimeToLive(DEFAULT_REPORTING_INTERVAL);
@@ -107,6 +119,13 @@ public class Application {
 			}
 
 		});
+
+        try {
+            configuration = configure(name);
+        } catch (IOException e) {
+            System.out.println( "Could not configure application "+name );
+        }
+
     }
 
     public int getNumThreads() {
@@ -118,6 +137,25 @@ public class Application {
 	}
 
 	public ThreadPool getThreadPool() { return workers; }
+
+    public static Document configure( String appName ) throws IOException {
+        Document config = null;
+        InputStream is = CommandLineInterface.class.getClassLoader().getResourceAsStream(appName+".json");
+
+        Reader reader = new InputStreamReader(is, "UTF-8");
+        StringBuffer sb = new StringBuffer();
+        int data = reader.read();
+
+        while(data != -1){
+            sb.append( (char)data );
+            data = reader.read();
+        }
+
+        reader.close();
+        config = Document.parse( sb.toString() );
+
+        return config;
+    }
 
 }
 
