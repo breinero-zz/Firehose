@@ -1,6 +1,6 @@
-package com.bryanreinero.util.retry;
+package com.bryanreinero.firehose.util.retry;
 
-import com.bryanreinero.util.Operation;
+import com.bryanreinero.firehose.util.Operation;
 
 /**
  * Created by breinero on 10/12/15.

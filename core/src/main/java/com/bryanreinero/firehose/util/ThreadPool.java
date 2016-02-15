@@ -1,4 +1,4 @@
-package com.bryanreinero.util;
+package com.bryanreinero.firehose.util;
 
 import java.util.ArrayList;
 import java.util.List;

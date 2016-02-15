@@ -1,26 +1,19 @@
-package com.bryanreinero.firehose.markov;
+package com.bryanreinero.firehose.util.markov;
 
-public class Event implements Comparable<Event> {
+public class Event <T> implements Comparable<Event> {
 
-	private final String id;
-	private final Outcome outcome;
+	private final T outcome;
 	private float probability;
 
-	public Event(String id, float p, Outcome o) {
-		if (id == null)
-			throw new IllegalArgumentException("Outcome id can't be null");
+	public Event( float p, T o ) {
 		if (p < 0 || p > 1)
 			throw new IllegalArgumentException(
 					"Probability must be a value > 0 and < 1");
 		if (o == null)
 			throw new IllegalArgumentException("Outcome callback can't be null");
-		this.id = id;
+
 		this.probability = p;
 		this.outcome = o;
-	}
-
-	public String getId() {
-		return id;
 	}
 
 	public float getProbability() {
@@ -31,8 +24,8 @@ public class Event implements Comparable<Event> {
 		this.probability = probability;
 	}
 
-	public void getOutcome() {
-		outcome.execute();
+	public T getOutcome() {
+		return outcome;
 	}
 
 	@Override
@@ -49,11 +42,18 @@ public class Event implements Comparable<Event> {
 
 	@Override
 	public boolean equals(Object o) {
-		return (o instanceof Event && ((Event) o).getId().equals(this.id));
+        return ( o instanceof Event &&
+               outcome.equals( ((Event)o).getOutcome() )
+        );
 	}
+
+    @Override
+    public int hashCode() {
+        return outcome.hashCode();
+    }
 	
 	@Override
 	public String toString () {
-		return "{ id: "+id+", probability: "+probability+" outcome: "+outcome+" }";
+		return "{ outcome: "+outcome+", probability: "+probability+"  }";
 	}
 }

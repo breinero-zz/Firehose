@@ -1,4 +1,4 @@
-package com.bryanreinero.util;
+package com.bryanreinero.firehose.util;
 
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;

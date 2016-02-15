@@ -1,4 +1,4 @@
-package com.bryanreinero.util.retry;
+package com.bryanreinero.firehose.util.retry;
 
 /**
  * Created by bryan on 10/23/15.

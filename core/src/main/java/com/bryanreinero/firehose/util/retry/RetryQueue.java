@@ -1,6 +1,6 @@
-package com.bryanreinero.util.retry;
+package com.bryanreinero.firehose.util.retry;
 
-import com.bryanreinero.util.ThreadPool;
+import com.bryanreinero.firehose.util.ThreadPool;
 
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicBoolean;

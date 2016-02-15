@@ -1,7 +1,7 @@
-package com.bryanreinero.util;
+package com.bryanreinero.firehose.util;
 
 import com.bryanreinero.firehose.metrics.SampleSet;
-import com.bryanreinero.util.retry.RetryPolicy;
+import com.bryanreinero.firehose.util.retry.RetryPolicy;
 
 /**
  * Created by bryan on 10/24/15.

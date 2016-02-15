@@ -1,4 +1,4 @@
-package com.bryanreinero.util;
+package com.bryanreinero.firehose.util;
 
 public interface WorkerPoolMBean {
 	public void setNumThreads(int count);

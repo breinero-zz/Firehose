@@ -1,4 +1,4 @@
-package com.bryanreinero.util;
+package com.bryanreinero.firehose.util;
 
 import java.lang.management.ManagementFactory;
 import java.util.ArrayList;

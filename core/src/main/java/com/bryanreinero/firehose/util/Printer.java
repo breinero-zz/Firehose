@@ -1,4 +1,4 @@
-package com.bryanreinero.util;
+package com.bryanreinero.firehose.util;
 
 import java.io.Console;
 import java.io.PrintStream;
@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.mongodb.util.JSON;
 
 public class Printer extends TimerTask {
 	

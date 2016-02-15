@@ -1,9 +1,9 @@
-package com.bryanreinero.util;
+package com.bryanreinero.firehose.util;
 
 import com.bryanreinero.firehose.metrics.SampleSet;
-import com.bryanreinero.util.retry.RetryPolicy;
-import com.bryanreinero.util.retry.RetryQueue;
-import com.bryanreinero.util.retry.RetryRequest;
+import com.bryanreinero.firehose.util.retry.RetryPolicy;
+import com.bryanreinero.firehose.util.retry.RetryQueue;
+import com.bryanreinero.firehose.util.retry.RetryRequest;
 
 import java.util.concurrent.Callable;
 

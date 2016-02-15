@@ -1,16 +1,10 @@
-package com.bryanreinero.util.retry;
+package com.bryanreinero.firehose.util.retry;
 
-import com.mongodb.MongoClient;
 import org.bson.BsonReader;
 import org.bson.BsonWriter;
-import org.bson.Document;
-import org.bson.UuidRepresentation;
 import org.bson.codecs.*;
-import org.bson.codecs.configuration.CodecRegistries;
-import org.bson.codecs.configuration.CodecRegistry;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 

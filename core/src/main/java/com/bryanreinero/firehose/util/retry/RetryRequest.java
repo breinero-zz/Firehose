@@ -1,6 +1,6 @@
-package com.bryanreinero.util.retry;
+package com.bryanreinero.firehose.util.retry;
 
-import com.bryanreinero.util.Result;
+import com.bryanreinero.firehose.util.Result;
 
 import java.util.concurrent.Callable;
 import java.util.concurrent.Delayed;
