@@ -1,8 +1,8 @@
 package com.bryanreinero.firehose.dao.mongo;
 
 import com.bryanreinero.firehose.metrics.Interval;
-import com.bryanreinero.util.Operation;
-import com.bryanreinero.util.Result;
+import com.bryanreinero.firehose.util.Operation;
+import com.bryanreinero.firehose.util.Result;
 
 import com.mongodb.*;
 

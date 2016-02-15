@@ -1,9 +1,6 @@
 package com.bryanreinero.loadgen;
 
-import java.util.Random;
-import java.util.Vector;
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 
 import com.bryanreinero.firehose.dao.DataAccessHub;
 import com.bryanreinero.firehose.dao.DataStore;
@@ -11,11 +8,9 @@ import com.bryanreinero.firehose.dao.mongo.MongoDAO;
 import com.bryanreinero.firehose.dao.mongo.Write;
 import com.bryanreinero.firehose.dao.mongo.Read;
 
-import com.bryanreinero.util.OperationDescriptor;
-import com.bryanreinero.util.Result;
-import com.bryanreinero.util.ThreadPool;
-import com.mongodb.MongoClient;
-import com.mongodb.client.MongoCollection;
+import com.bryanreinero.firehose.util.Result;
+import com.bryanreinero.firehose.util.ThreadPool;
+
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -24,11 +19,10 @@ import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.Statistics;
 
-import com.bryanreinero.firehose.markov.Chain;
-import com.bryanreinero.firehose.markov.Event;
-import com.bryanreinero.firehose.markov.Outcome;
+import com.bryanreinero.firehose.util.markov.Chain;
+import com.bryanreinero.firehose.util.markov.Event;
 
-import com.bryanreinero.util.Application;
+import com.bryanreinero.firehose.util.Application;
 
 public class LoadDemo {
 
@@ -55,8 +49,12 @@ public class LoadDemo {
 	
 	private int maxNumberObjects = 0;
 	private Vector<ObjectId> ids = null;
+
+	private interface Operation {
+		void execute();
+	}
 	
-	private Chain operations = new Chain();
+	private Chain<Operation> operations = new Chain<Operation>();
 
 	public class numThreadsCB implements CallBack {
 		@Override
@@ -72,43 +70,44 @@ public class LoadDemo {
 	}
 
 	public LoadDemo( String[] args ) throws Exception {
-
 		// create Markov tree for CRUD operation distribution
-		List<Event> events = new ArrayList<Event>();
+		Set<Event<Operation>> events = new HashSet<Event<Operation>>();
 
         events.add(
-                new Event("create", 0.25f,
-                        new Outcome() {
+                new Event<Operation>( 0.25f,
+                        new Operation() {
                             @Override
                             public void execute() {
                                 createADocument();
                             }
-                        }
+						}
                 )
         );
 
-		events.add(new Event("read", 0.25f, new Outcome() {
+		events.add( new Event<Operation>( 0.25f, new Operation() {
 			@Override
 			public void execute() {
 				readADocument();
 			}
+
 		}));
 
-		events.add(new Event("update", 0.25f, new Outcome() {
+		events.add( new Event<Operation>( 0.25f, new Operation() {
 			@Override
 			public void execute() {
 				updateADocument();
 			}
+
 		}));
 
-		events.add(new Event("delete", 0.25f, new Outcome() {
+		events.add(new Event<Operation>( 0.25f, new Operation() {
 			@Override
 			public void execute() {
 				deleteADocument();
 			}
 		}));
 				
-		operations.setEvent( events );
+		operations.setProbabilities( events );
 
 		app = new Application( appName );
         // First step, set up the command line interface

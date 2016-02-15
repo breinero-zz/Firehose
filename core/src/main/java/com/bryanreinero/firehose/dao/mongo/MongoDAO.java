@@ -1,7 +1,7 @@
 package com.bryanreinero.firehose.dao.mongo;
 
-import com.bryanreinero.util.Operation;
-import com.bryanreinero.util.OperationDescriptor;
+import com.bryanreinero.firehose.util.Operation;
+import com.bryanreinero.firehose.util.OperationDescriptor;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;

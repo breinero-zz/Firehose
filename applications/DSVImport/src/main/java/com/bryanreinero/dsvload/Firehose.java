@@ -16,11 +16,8 @@ import com.bryanreinero.firehose.dao.mongo.Write;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
-import com.bryanreinero.util.*;
-import com.mongodb.MongoClient;
+import com.bryanreinero.firehose.util.*;
 import org.bson.Document;
-
-import javax.naming.NamingException;
 
 public class Firehose {
 	

@@ -5,7 +5,7 @@ import java.util.Map;
 
 import com.bryanreinero.firehose.dao.mongo.MongoDAO;
 import com.bryanreinero.firehose.dao.mongo.MongoDAOCodec;
-import com.bryanreinero.util.OperationDescriptor;
+import com.bryanreinero.firehose.util.OperationDescriptor;
 
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientOptions;
@@ -14,9 +14,6 @@ import org.bson.Document;
 import org.bson.codecs.Codec;
 import org.bson.codecs.configuration.CodecRegistries;
 import org.bson.codecs.configuration.CodecRegistry;
-
-import static com.bryanreinero.firehose.dao.DataStore.*;
-import static com.bryanreinero.firehose.dao.DataStore.Type.mongodb;
 
 /**
  * DataAccessHub is a map for Database
