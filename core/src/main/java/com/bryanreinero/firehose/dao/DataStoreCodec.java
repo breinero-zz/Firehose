@@ -18,10 +18,10 @@ public class DataStoreCodec implements Codec<DataStore> {
         DataStore store = null;
         reader.readStartDocument();
         String name = reader.readString("_id");
-        String app = reader.readString("application");
         String typeS = reader.readString("type");
-        Type type = Type.getType(typeS);
         String uri = reader.readString("uri");
+        String app = reader.readString("application");
+        Type type = Type.getType(typeS);
         reader.readEndDocument();
 
         switch (type) {
