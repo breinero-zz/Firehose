@@ -27,9 +27,16 @@ public class DataStore {
         }
     }
 
+    // The unique name of this datastore
     private final String name;
+
+    // the name of the owning application
     private final String application;
+
+    // The URI where to connect
     private final String uri;
+
+    // Type of datastore MognoiDB, MySQL, or flar-file
     private final Type type;
 
     public DataStore( String name, String app, String uri, Type type ) {

@@ -41,6 +41,7 @@ project( 'core' ) {
         compile "org.mongodb:mongo-java-driver:${javaDriverVersion}"
         compile "org.apache.commons:commons-math3:3.0"
         compile "commons-cli:commons-cli:1.2"
+        compile group: 'joda-time', name: 'joda-time', version: '2.9.2'
     }
 
     jar {
@@ -85,6 +86,23 @@ project("applications/LoadGenerator") {
 }
 
 project("applications/DSVImport") {
+
+    dependencies {
+        compile project(':core')
+    }
+
+    jar {
+        from sourceSets.main.output
+        from project(':core').sourceSets.main.output
+
+        configurations.compile.each {
+            from zipTree(it)
+        }
+    }
+
+}
+
+project( "Projector" ) {
 
     dependencies {
         compile project(':core')

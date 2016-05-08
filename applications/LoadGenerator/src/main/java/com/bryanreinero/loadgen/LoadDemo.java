@@ -1,28 +1,29 @@
 package com.bryanreinero.loadgen;
 
-import java.util.*;
-
+import com.bryanreinero.firehose.circuitbreaker.BreakerBox;
+import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.dao.DataAccessHub;
 import com.bryanreinero.firehose.dao.DataStore;
 import com.bryanreinero.firehose.dao.mongo.MongoDAO;
-import com.bryanreinero.firehose.dao.mongo.Write;
 import com.bryanreinero.firehose.dao.mongo.Read;
-
+import com.bryanreinero.firehose.dao.mongo.Write;
+import com.bryanreinero.firehose.metrics.Interval;
+import com.bryanreinero.firehose.metrics.Statistics;
+import com.bryanreinero.firehose.util.Application;
+import com.bryanreinero.firehose.util.OperationDescriptor;
 import com.bryanreinero.firehose.util.Result;
 import com.bryanreinero.firehose.util.ThreadPool;
-
+import com.bryanreinero.markov.Chain;
+import com.bryanreinero.markov.Event;
+import com.bryanreinero.platypus.generator.DocumentGenerator;
+import com.bryanreinero.platypus.schema.DocumentDescriptor;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
-import com.bryanreinero.firehose.circuitbreaker.BreakerBox;
-import com.bryanreinero.firehose.cli.CallBack;
-import com.bryanreinero.firehose.metrics.Interval;
-import com.bryanreinero.firehose.metrics.Statistics;
-
-import com.bryanreinero.firehose.util.markov.Chain;
-import com.bryanreinero.firehose.util.markov.Event;
-
-import com.bryanreinero.firehose.util.Application;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+import java.util.Vector;
 
 public class LoadDemo {
 
@@ -34,11 +35,16 @@ public class LoadDemo {
     private String controlDBURI = null;
     private Read<DataStore> findDataStores;
     private Read<MongoDAO> findOperations;
+
     private MongoDAO<DataStore, Read> dataStoreDAO
-            = new MongoDAO( "getDataStores", "control", "control.datastores", DataStore.class );
+            = new MongoDAO( "getDataStores", "control", "Firehose.datastores", DataStore.class );
 
     private MongoDAO<MongoDAO, Read> operationDAO
-            = new MongoDAO( "getDescitptors", "control", "control.descriptors", MongoDAO.class );
+            = new MongoDAO( "getDescitptors", "control", "Firehose.operations", MongoDAO.class );
+
+    private MongoDAO<MongoDAO, Read> docGeneratorDAO
+            =  new MongoDAO( "getDocDescriptor", "control", "Firehose.documents", DocumentDescriptor.class );
+
 
 	private final Statistics stats;
 	
@@ -48,6 +54,7 @@ public class LoadDemo {
 	private Random rand = new Random();
 	
 	private int maxNumberObjects = 0;
+    private int numThreads = 1;
 	private Vector<ObjectId> ids = null;
 
 	private interface Operation {
@@ -55,19 +62,6 @@ public class LoadDemo {
 	}
 	
 	private Chain<Operation> operations = new Chain<Operation>();
-
-	public class numThreadsCB implements CallBack {
-		@Override
-		public void handle(String[] values) throws Exception {
-			try {
-				maxNumberObjects  = Integer.parseInt( values[0] );
-				ids = new Vector( maxNumberObjects );
-			}catch (Exception e) {
-				throw new Exception(
-						"CLI Callback to set max number of objects failed ", e );
-			}
-		}
-	}
 
 	public LoadDemo( String[] args ) throws Exception {
 		// create Markov tree for CRUD operation distribution
@@ -78,16 +72,31 @@ public class LoadDemo {
                         new Operation() {
                             @Override
                             public void execute() {
-                                createADocument();
+                                MongoDAO dao = (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "insert" );
+
+                                pool.submitTask(
+                                        new Write<Document>(
+                                                dao.getGenerator().getDocument(),
+                                                (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "insert" )
+                                        )
+                                );
                             }
 						}
                 )
         );
 
-		events.add( new Event<Operation>( 0.25f, new Operation() {
+		events.add(
+                new Event<Operation>( 0.25f, new Operation() {
 			@Override
 			public void execute() {
-				readADocument();
+                MongoDAO dao = (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "read" );
+
+                pool.submitTask(
+                        new Read<Document>(
+                                dao.getGenerator().getDocument(),
+                                (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "read" )
+                        )
+                );
 			}
 
 		}));
@@ -95,15 +104,29 @@ public class LoadDemo {
 		events.add( new Event<Operation>( 0.25f, new Operation() {
 			@Override
 			public void execute() {
-				updateADocument();
+                MongoDAO dao = (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "update" );
+
+                pool.submitTask(
+                        new Write<Document>(
+                                dao.getGenerator().getDocument(),
+                                (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "update" )
+                        )
+                );
 			}
 
 		}));
 
-		events.add(new Event<Operation>( 0.25f, new Operation() {
+		events.add( new Event<Operation>( 0.25f, new Operation() {
 			@Override
 			public void execute() {
-				deleteADocument();
+                MongoDAO dao = (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "delete" );
+
+                pool.submitTask(
+                        new Write<Document>(
+                                dao.getGenerator().getDocument(),
+                                (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "delete" )
+                        )
+                );
 			}
 		}));
 				
@@ -139,7 +162,6 @@ public class LoadDemo {
             throw new Exception( "Application failed to initialize", e );
 		}
 
-
         initializeDataStores();
 
         // prepare the instrumentation
@@ -156,12 +178,15 @@ public class LoadDemo {
 
 	private void initializeDataStores() throws Exception {
 
+        // Tell the DataAccesHub where to find the Control DB
 		DataAccessHub.INSTANCE.setDataStore(
 				new DataStore( "control", appName, controlDBURI, DataStore.Type.mongodb )
 		);
 
+        // Initialize the Data HUB with the Data Access Objects
         DataAccessHub.INSTANCE.setDao( dataStoreDAO );
         DataAccessHub.INSTANCE.setDao( operationDAO );
+        DataAccessHub.INSTANCE.setDao( docGeneratorDAO );
 
 		findDataStores = new Read<DataStore>(
 				new Document( "application", appName ),
@@ -192,6 +217,22 @@ public class LoadDemo {
             throw new Exception( "Could not initialize operations "+r.getMessage() );
 
         for ( Object descriptor : r.getResults() ) {
+
+			// Get the DocumentDescriptors so we can create DocumentGenerators
+            Read<DocumentDescriptor> read  = new Read<DocumentDescriptor>(
+					new Document( "_id", ((OperationDescriptor)descriptor).getName()  ),
+					docGeneratorDAO
+			);
+
+
+            r = pool.submitTask( read );
+            if ( r.hasFailed() )
+                throw new Exception( "Could not retrieve document descriptor. "+r.getMessage() );
+
+            Object docDesc = r.getResults();
+            DocumentGenerator generator = new DocumentGenerator(  (DocumentDescriptor)docDesc );
+            ((MongoDAO)descriptor).setGenerator( generator );
+
             ((MongoDAO)descriptor).setSamples( app.getSampleSet() );
             DataAccessHub.INSTANCE.setDao((MongoDAO) descriptor);
         }
@@ -205,40 +246,6 @@ public class LoadDemo {
             System.out.println( "Load Demo Failed \n" );
 			e.printStackTrace();
         }
-	}
-
-	private void createADocument() {
-		
-		if ( ids.size() >= maxNumberObjects ) return;
-		
-		ObjectId id = new ObjectId();
-		Document newguy = new Document("_id", id);
-		newguy.put( "a", rand.nextFloat() );
-		newguy.put( "b", rand.nextFloat() );
-		newguy.put( "c", rand.nextFloat() );
-        System.out.println( "Submitting document "+newguy );
-
-        Write<Document> op =  new Write<Document>(
-                newguy,
-                (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "insert" ) );
-        op.setSamples( app.getSampleSet() );
-        pool.submitTask( op );
-		
-		ids.add( id );
-	}
-	
-	private void readADocument() {
-		if( ids.isEmpty() ) return;
-		Document query = new Document(
-				"_id",
-				 ids.get( rand.nextInt( ids.size() ) )
-		);
-
-        pool.submitTask(
-                new Read<Document>(
-                        query,
-                        (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "read" ) )
-        );
 	}
 	
 	private void updateADocument() {
@@ -273,9 +280,7 @@ public class LoadDemo {
        while ( true ) {
             try (Interval t = app.getSampleSet().set("total")) {
                 // get a random CRUD operation to execute
-                //operations.run(rand.nextFloat());
-
-				createADocument();
+                operations.run();
 				System.out.println( this );
             }
       }
