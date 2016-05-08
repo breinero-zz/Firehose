@@ -20,7 +20,11 @@ public class MongoDAOCodec implements Codec<MongoDAO> {
         bsonReader.readObjectId();
         String name = bsonReader.readString("name");
         String datastore = bsonReader.readString("datastore" );
+
+        /// identifies the database and collection this operation executes against
         String namespace = bsonReader.readString( "namespace" );
+
+        // identifies the dabase type [mongodb|mysql|etc]
         String typeString = bsonReader.readString( "type" );
 
 
@@ -31,6 +35,7 @@ public class MongoDAOCodec implements Codec<MongoDAO> {
 
         String application = bsonReader.readString( "application" );
 
+        // Identifies the Opeeration Class, (which actually performs the work)
         Class<?> c = null;
         String className = null;
         try {
@@ -40,12 +45,15 @@ public class MongoDAOCodec implements Codec<MongoDAO> {
             throw new IllegalArgumentException( "Unregonized entity: "+className, e  );
         }
 
+        // create the operation descriptor
         descriptor = new MongoDAO(
                 name,
                 datastore,
                 namespace,
                 c
         );
+
+        //TODO: Add Schema Descriptor
 
         //TODO: Add decoding call for embedded retry strategy
 
