@@ -4,6 +4,8 @@ import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
 
 import java.util.Map;
 
+import static com.bryanreinero.firehose.metrics.Format.formatStat;
+
 public class Statistics implements StatisticsMBean {
 
 	private SampleSet set;
@@ -28,19 +30,6 @@ public class Statistics implements StatisticsMBean {
 		}
 		
 		buf.append("\n}");
-		
-		return buf.toString();
-	}
-	
-	public String formatStat( DescriptiveStatistics stat ) {
-		
-		StringBuffer buf = new StringBuffer();
-		buf.append("{\n\tmean: "+stat.getMean()+", \n");
-        buf.append("\tmedian: "+stat.getPercentile(50)+", \n");
-        buf.append("\tstd: "+stat.getStandardDeviation()+", \n");
-        buf.append("\tcount: "+stat.getN()+", \n");
-        buf.append("\ttotal: "+stat.getSum());
-        buf.append("\n}");
 		return buf.toString();
 	}
 

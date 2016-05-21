@@ -1,22 +1,21 @@
 package com.bryanreinero.firehose.metrics;
 
+import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
+
+import javax.management.ObjectName;
 import java.lang.management.ManagementFactory;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.HashMap;
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import javax.management.ObjectName;
-
-import org.apache.commons.math3.stat.descriptive.DescriptiveStatistics;
-
 public class SampleSet {
 	
-	private final DelayQueue<Interval> intervals = new DelayQueue<Interval>();
+	private final DelayQueue<Interval> intervals = new DelayQueue<>();
 	
 	private final Cleanser cleanser = new Cleanser();
-	private AtomicBoolean running = new AtomicBoolean(true);
+	private AtomicBoolean running = new AtomicBoolean(false);
 	private Long timeToLive = 1000L;
 	
 	private class Cleanser extends Thread {
@@ -51,15 +50,18 @@ public class SampleSet {
 			ManagementFactory.getPlatformMBeanServer().registerMBean(mbean, name); 
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
-        
-		cleanser.start();
+		}
 	}
-	
+
+	public void start() {
+		if( running.compareAndSet( false, true ) )
+			cleanser.start();
+	}
+
 	public void stop(){
 		running.set(false);
 	}
-	
+
 	public Map<String, DescriptiveStatistics> report() {
 		
 		Map<String, DescriptiveStatistics> stats = new HashMap<String, DescriptiveStatistics>();
