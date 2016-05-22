@@ -101,20 +101,3 @@ project("applications/DSVImport") {
     }
 
 }
-
-project( "Projector" ) {
-
-    dependencies {
-        compile project(':core')
-    }
-
-    jar {
-        from sourceSets.main.output
-        from project(':core').sourceSets.main.output
-
-        configurations.compile.each {
-            from zipTree(it)
-        }
-    }
-
-}
