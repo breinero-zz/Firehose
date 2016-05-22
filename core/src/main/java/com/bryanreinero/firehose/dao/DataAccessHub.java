@@ -1,19 +1,12 @@
 package com.bryanreinero.firehose.dao;
 
+import com.bryanreinero.firehose.dao.mongo.MongoDAO;
+import com.bryanreinero.firehose.util.OperationDescriptor;
+import com.mongodb.MongoClient;
+import com.mongodb.client.MongoDatabase;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import com.bryanreinero.firehose.dao.mongo.MongoDAO;
-import com.bryanreinero.firehose.dao.mongo.MongoDAOCodec;
-import com.bryanreinero.firehose.util.OperationDescriptor;
-
-import com.mongodb.MongoClient;
-import com.mongodb.MongoClientOptions;
-import com.mongodb.client.MongoDatabase;
-import org.bson.Document;
-import org.bson.codecs.Codec;
-import org.bson.codecs.configuration.CodecRegistries;
-import org.bson.codecs.configuration.CodecRegistry;
 
 /**
  * DataAccessHub is a map for Database
@@ -40,18 +33,18 @@ public enum DataAccessHub {
         clusters.put(key, c);
     }
 
-    public void setDao(MongoDAO dao) {
+    public void addOperationDescriptor( MongoDAO dao) {
         String name = dao.getName();
         String cluster = dao.getClusterName();
 
         MongoClient client;
-        if ((client = clusters.get(cluster)) == null)
-            throw new IllegalArgumentException("No cluster exists for " + cluster);
+        if ( (client = clusters.get(cluster) ) == null)
+            clusters.put( cluster, new MongoClient( dao.getClusterName() ) );
 
         MongoDatabase db = client.getDatabase(dao.getDatabaseName());
         dao.setDatabase(db);
 
-        dao.setCollection(db.getCollection(dao.getCollectionName(), dao.getEntityClass() ));
+        dao.setCollection( db.getCollection(dao.getCollectionName()) );
 
         descriptors.put(name, dao);
     }
@@ -63,22 +56,10 @@ public enum DataAccessHub {
     public void setDataStore ( DataStore store ) {
 
         switch ( store.getType() ) {
+            case unknown:
+                break;
             case mongodb: {
-                Codec<Document> defaultDocumentCodec = MongoClient.getDefaultCodecRegistry().get(
-                        Document.class);
-
-                MongoDAOCodec daoCodec = new MongoDAOCodec();
-                DataStoreCodec dsCodec = new DataStoreCodec();
-
-                CodecRegistry codecRegistry = CodecRegistries.fromRegistries(
-                        MongoClient.getDefaultCodecRegistry(),
-                        CodecRegistries.fromCodecs( daoCodec, dsCodec )
-                );
-
-                MongoClientOptions options
-                        = MongoClientOptions.builder().codecRegistry(codecRegistry).build();
-
-                clusters.put(store.getName(), new MongoClient(store.getUri(), options ) );
+                clusters.put( store.getName(), new MongoClient(store.getUri() ) );
                 break;
             }
             default:

@@ -46,12 +46,7 @@ public class MongoDAOCodec implements Codec<MongoDAO> {
         }
 
         // create the operation descriptor
-        descriptor = new MongoDAO(
-                name,
-                datastore,
-                namespace,
-                c
-        );
+        descriptor = null;
 
         //TODO: Add Schema Descriptor
 

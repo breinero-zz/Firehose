@@ -24,6 +24,13 @@
         "name": "delimeter",
         "description": "the value separator used to parse columns. Default ','",
         "args": 1
+      },
+      {
+        "op": "db",
+        "longOpt": "database",
+        "name": "database",
+        "description": "the target datanbase to import the dsv to",
+        "args": 1
       }
     ]
   }

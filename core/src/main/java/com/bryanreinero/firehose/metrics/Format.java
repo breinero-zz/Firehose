@@ -11,14 +11,15 @@ public class Format {
 
     public static String report( SampleSet set ) {
         StringBuffer buf = new StringBuffer("{\n ");
-
+        buf.append("\"ops\": [\n");
         for( Map.Entry<String, DescriptiveStatistics> aggregate : set.report().entrySet() ) {
-            buf.append(",\n");
+
             DescriptiveStatistics stat = aggregate.getValue();
-            buf.append(aggregate.getKey());
-            buf.append(": "+ formatStat( stat ) );
+            buf.append( "\t{ name: \""+aggregate.getKey()+"\",");
+            buf.append( formatStat( stat ) );
 
         }
+        buf.append( "\n\t]\n");
         buf.append("\n}");
 
         return buf.toString();
@@ -27,12 +28,14 @@ public class Format {
     public static String formatStat( DescriptiveStatistics stat ) {
 
         StringBuffer buf = new StringBuffer();
-        buf.append("{\n\tmean: "+stat.getMean()+", \n");
-        buf.append("\tmedian: "+stat.getPercentile(50)+", \n");
-        buf.append("\tstd: "+stat.getStandardDeviation()+", \n");
-        buf.append("\tcount: "+stat.getN()+", \n");
-        buf.append("\ttotal: "+stat.getSum());
-        buf.append("\n}");
+        buf.append( "\n\t stats: {");
+        buf.append("\n\t\tmean: "+stat.getMean()+", \n");
+        buf.append("\t\tmedian: "+stat.getPercentile(50)+", \n");
+        buf.append("\t\tstd: "+stat.getStandardDeviation()+", \n");
+        buf.append("\t\tcount: "+stat.getN()+", \n");
+        buf.append("\t\ttotal: "+stat.getSum());
+        buf.append("\n\t\t}");
+        buf.append("\n\t}");
         return buf.toString();
     }
 

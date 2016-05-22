@@ -1,5 +1,7 @@
 package com.bryanreinero.firehose.dao;
 
+import java.net.URI;
+
 /**
  * Created by brein on 1/3/2016.
  */
@@ -34,16 +36,16 @@ public class DataStore {
     private final String application;
 
     // The URI where to connect
-    private final String uri;
+    private final URI uri;
 
-    // Type of datastore MognoiDB, MySQL, or flar-file
+    // Type of datastore MongoDB, MySQL, or flat-file
     private final Type type;
 
-    public DataStore( String name, String app, String uri, Type type ) {
+    public DataStore( String name, String app, URI uri ) {
         this.name = name;
         this.application = app;
         this.uri = uri;
-        this.type = type;
+        this.type = Type.getType( uri.getScheme() );
     }
 
     public String getName() {
@@ -55,7 +57,7 @@ public class DataStore {
     }
 
     public String getUri() {
-        return uri;
+        return uri.toString();
     }
 
     public Type getType() {

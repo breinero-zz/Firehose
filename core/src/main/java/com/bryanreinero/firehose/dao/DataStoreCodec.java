@@ -6,7 +6,8 @@ import org.bson.codecs.Codec;
 import org.bson.codecs.DecoderContext;
 import org.bson.codecs.EncoderContext;
 
-import static com.bryanreinero.firehose.dao.DataStore.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Created by brein on 1/2/2016.
@@ -21,18 +22,13 @@ public class DataStoreCodec implements Codec<DataStore> {
         String typeS = reader.readString("type");
         String uri = reader.readString("uri");
         String app = reader.readString("application");
-        Type type = Type.getType(typeS);
         reader.readEndDocument();
 
-        switch (type) {
-            case unknown:
-                throw new IllegalArgumentException("Unrecognized data store type: " + typeS);
-
-            case mongodb:
-                store = new DataStore(name, app, uri, type);
-            break;
+        try {
+            return new DataStore(name, app, new URI( uri ) );
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException( "bad uri ", e );
         }
-        return store;
     }
 
     @Override

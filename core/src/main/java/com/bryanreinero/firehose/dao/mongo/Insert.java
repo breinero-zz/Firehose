@@ -3,20 +3,19 @@ package com.bryanreinero.firehose.dao.mongo;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.util.Operation;
 import com.bryanreinero.firehose.util.Result;
-
 import com.mongodb.*;
-
 import org.bson.BsonDocument;
+import org.bson.Document;
 
 /**
  * Created by breinero on 10/11/15.
  */
-public class Write <T> extends Operation {
+public class Insert extends Operation {
 
-    private T document;
+    private Document document;
     private final MongoDAO descriptor;
 
-    public Write( T document,  MongoDAO descriptor ) {
+    public Insert(Document document, MongoDAO descriptor ) {
         super( descriptor );
         this.descriptor = descriptor;
         this.document = document;
@@ -50,12 +49,12 @@ public class Write <T> extends Operation {
             com.mongodb.bulk.WriteConcernError error;
             error = mwce.getWriteConcernError();
             BsonDocument details = error.getDetails();
-            r.setFailed( "Raad failed. "+details.toString() );
+            r.setFailed( "Operation failed. "+details.toString() );
 
         } catch ( MongoTimeoutException mte ) {
             AttemptRetry();
         } catch (MongoException me) {
-            r.setFailed( "Raad failed. "+me.toString());
+            r.setFailed( "Operation failed. "+me.toString());
         }
 
         return r;

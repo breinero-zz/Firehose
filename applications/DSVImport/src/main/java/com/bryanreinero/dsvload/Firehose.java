@@ -1,23 +1,22 @@
 package com.bryanreinero.dsvload;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.IOException;
-
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import com.bryanreinero.firehose.cli.CallBack;
-import com.bryanreinero.firehose.dao.DataAccessHub;
-import com.bryanreinero.firehose.dao.DataStore;
+import com.bryanreinero.firehose.dao.mongo.Insert;
 import com.bryanreinero.firehose.dao.mongo.MongoDAO;
-import com.bryanreinero.firehose.dao.mongo.Read;
-import com.bryanreinero.firehose.dao.mongo.Write;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
-import com.bryanreinero.firehose.util.*;
+import com.bryanreinero.firehose.util.Application;
+import com.bryanreinero.firehose.util.ThreadPool;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientURI;
 import org.bson.Document;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Firehose {
 	
@@ -30,15 +29,17 @@ public class Firehose {
 	private Converter converter = new Converter();
 	private BufferedReader br = null;
 
-	private final String SFCabDB = "127.0.0.1:27017";
+	private String dburi = "mongodb://127.0.0.1:27017/";
+    private MongoClient client = null;
+
+    private MongoDAO<Insert> descriptor = null;
 
 	private Boolean verbose = false;
 	private String filename = null;
 
 	private AtomicBoolean running = new AtomicBoolean( true );
 
-    private MongoDAO<MongoDAO, Read> logDAO
-            = new MongoDAO( "insert", "SFCabDB", "SFCab.GPSLog", MongoDAO.class );
+
 
 	private void unitOfWork() {
 
@@ -69,13 +70,17 @@ public class Firehose {
                             object = converter.convert(currentLine);
                         }
 
-                        Write<Document> op =  new Write<Document>(
-                                object,
-                                (MongoDAO) DataAccessHub.INSTANCE.getDescriptor( "insert" ) );
-                        op.setSamples( app.getSampleSet() );
 
-                        // Insert the new Document
-                        app.getThreadPool().submitTask( op );
+                        String taxi = object.getString( "taxi" );
+                        Integer ts = object.getInteger( "ts" );
+                        Document _id = new Document();
+                        _id.put( "ts", ts );
+                        _id.put( "taxi", taxi );
+                        object.put( "_id", _id );
+
+                        object.remove( "taxi" );
+                        object.remove( "ts" );
+                       app.getThreadPool().submitTask( new Insert( object, descriptor ) );
                     }
         }
 	}
@@ -87,6 +92,9 @@ public class Firehose {
 	public Firehose () throws Exception {
 
 		app = new Application( appName );
+        threadPool = app.getThreadPool();
+        samples = app.getSampleSet();
+        stats = new Statistics( samples );
 
         // First step, set up the command line interface
         app.setCommandLineInterfaceCallback(
@@ -123,18 +131,36 @@ public class Firehose {
 			}
 		});
 
-		threadPool = app.getThreadPool();
-		samples = app.getSampleSet();
-		stats = new Statistics( samples );
+        // custom command line callback for delimiter
+        app.setCommandLineInterfaceCallback( "db", new CallBack() {
+            @Override
+            public void handle(String[] values) {
+                dburi = values[0] ;
+            }
+        });
 
-        // Initialize the connection to the DB
-        DataAccessHub.INSTANCE.setDataStore(
-                new DataStore( "SFCabDB", appName, SFCabDB, DataStore.Type.mongodb )
+        // First step, set up the command line interface
+        app.setCommandLineInterfaceCallback(
+                "h", new CallBack() {
+                    @Override
+                    public void handle(String[] values) {
+                        for (String column : values) {
+                            String[] s = column.split(":");
+                            converter.addField( s[0], Transformer.getTransformer( s[1] ) );
+                        }
+                    }
+                }
         );
 
-        logDAO.setSamples( app.getSampleSet() );
-        DataAccessHub.INSTANCE.setDao( logDAO );
+        client = new MongoClient( new MongoClientURI( dburi ) );
+        descriptor = new MongoDAO<>( "insert", "cluster", "taxi.taxilogs" );
+        descriptor.setDatabase( client.getDatabase( descriptor.getDatabaseName() ) );
+        descriptor.setCollection(
+                client.getDatabase( descriptor.getDatabaseName() ).getCollection( descriptor.getCollectionName() )
 
+        );
+        descriptor.setSamples( samples );
+        samples.start();
 		app.addPrinable(this);
     }
 

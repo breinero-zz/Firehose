@@ -15,7 +15,7 @@ public class RetryRequest implements Delayed {
     private Callable<Result> callable = null;
     private final Long delay;
 
-    public RetryRequest( Long d) {
+    public RetryRequest( Long d ) {
         inception = System.currentTimeMillis();
         delay = d;
     }

@@ -2,19 +2,15 @@ package com.bryanreinero.firehose.util;
 
 import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;
-
 import com.bryanreinero.firehose.metrics.SampleSet;
-
 import org.apache.commons.cli.Option;
-
 import org.bson.Document;
 
+import javax.naming.NamingException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-
-import javax.naming.NamingException;
 
 public class Application {
 

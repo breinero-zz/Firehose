@@ -6,7 +6,7 @@ import com.bryanreinero.firehose.util.retry.RetryPolicy;
 /**
  * Created by bryan on 10/24/15.
  */
-public abstract class OperationDescriptor <P, T extends Operation> {
+public abstract class OperationDescriptor <T extends Operation> {
 
     private final String name;
     private RetryPolicy policy = null;
