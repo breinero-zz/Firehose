@@ -16,7 +16,7 @@ public class Application {
 
     private Document configuration ;
     private final String name;
-	private ThreadPool workers;
+	private WorkerPool workers;
 	private final CommandLineInterface cli;
 
 	private Printer printer = new Printer( DEFAULT_PRINT_INTERVAL );
@@ -45,7 +45,7 @@ public class Application {
 
         try {
             cli.parse( args );
-            workers = new ThreadPool( numThreads );
+            workers = new WorkerPool( numThreads );
         } catch (Exception e) {
             throw new IllegalStateException ( "Failed to process command line arguments. ", e );
         }
@@ -67,7 +67,6 @@ public class Application {
         o.setArgs( 1 );
         cli.addOption( o );
 		cli.addCallBack("t", new CallBack() {
-
 			@Override
 			public void handle(String[] values) {
 				numThreads = Integer.parseInt(values[0]);
@@ -132,7 +131,7 @@ public class Application {
 		printer.addPrintable(o);
 	}
 
-	public ThreadPool getThreadPool() { return workers; }
+	public WorkerPool getThreadPool() { return workers; }
 
     public static Document configure( String appName ) throws IOException {
         Document config = null;

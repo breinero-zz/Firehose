@@ -7,7 +7,7 @@ import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import com.bryanreinero.firehose.metrics.Statistics;
 import com.bryanreinero.firehose.util.Application;
-import com.bryanreinero.firehose.util.ThreadPool;
+import com.bryanreinero.firehose.util.WorkerPool;
 import com.mongodb.MongoClient;
 import com.mongodb.MongoClientURI;
 import org.bson.Document;
@@ -22,7 +22,7 @@ public class Firehose {
 	
 	private static final String appName = "Firehose";
 	private final Application app;
-	private final ThreadPool threadPool;
+	private final WorkerPool threadPool;
 	private final SampleSet samples;
 	private final Statistics stats;
 	private AtomicInteger linesRead = new AtomicInteger(0);

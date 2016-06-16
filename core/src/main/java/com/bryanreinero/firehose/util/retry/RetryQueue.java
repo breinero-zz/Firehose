@@ -1,6 +1,6 @@
 package com.bryanreinero.firehose.util.retry;
 
-import com.bryanreinero.firehose.util.ThreadPool;
+import com.bryanreinero.firehose.util.WorkerPool;
 
 import java.util.concurrent.DelayQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,10 +11,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RetryQueue extends Thread {
 
     private final DelayQueue queue;
-    private final ThreadPool pool;
+    private final WorkerPool pool;
     private AtomicBoolean running = new AtomicBoolean( false );
 
-    public RetryQueue( ThreadPool p ) {
+    public RetryQueue( WorkerPool p ) {
         queue = new DelayQueue();
         pool = p;
     }

@@ -5,7 +5,7 @@ import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.metrics.Interval;
 import com.bryanreinero.firehose.metrics.Statistics;
 import com.bryanreinero.firehose.util.Application;
-import com.bryanreinero.firehose.util.ThreadPool;
+import com.bryanreinero.firehose.util.WorkerPool;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 
@@ -16,7 +16,7 @@ public class LoadDemo {
 
 	private static final String appName = "LoadDemo";
 	private Application app = null;
-    private ThreadPool pool = new ThreadPool( 1 );
+    private WorkerPool pool = new WorkerPool( 1 );
 
     // Control database
     private String controlDBURI = null;
