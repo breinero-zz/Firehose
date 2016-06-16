@@ -1,83 +1,60 @@
 package com.bryanreinero.firehose.util;
 
-import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.*;
 
-import javax.management.ObjectName;
+public class WorkerPool {
 
-public class WorkerPool implements WorkerPoolMBean {
+	private final ExecutorService es;
+	private final CompletionService<Result> cs;
 	
-	public interface Executor {
-		public void execute();
-	}
+	public WorkerPool(int t) {
+		es = Executors.newFixedThreadPool( t );
+		cs = new ExecutorCompletionService<Result>( es );
 
-	private class Worker extends Thread {
-
-		public void run() {
-			try {
-				while (true) {
-					if (!running.get())
-						throw new InterruptedException();
-					executor.execute();
-				}
-			} catch (InterruptedException ex) {
-				Thread.currentThread().interrupt();
-			}
-		}
-	}
-
-	@Override
-	public void stop() {
-		synchronized (running) {
-			running.set(false);
-			for (Worker worker : workers) {
-				worker.interrupt();
-			}
-		}
 	}
 	
-	@Override
-	public void start() {
-		synchronized (running ) {
-			running.set(true);
-
-			for (int i = 0; i < numThreads; i++) {
-				Worker intake = new Worker();
-				intake.start();
-				workers.add(intake);
-			}
-		}
-	}
-	
-	@Override
-	public int getNumThreads() {
-		return workers.size();
-	}
-	
-	@Override
-	public void setNumThreads( int count ) {
-		this.numThreads = count;
-		if( running.get() ) {
-			stop();
-			start();
-		}
-	}
-
-	private final Executor executor;
-	private List<Worker> workers = new ArrayList<Worker>();
-	private AtomicBoolean running = new AtomicBoolean(false);
-	private int numThreads = 1;
-	
-	public WorkerPool ( Executor executor ) { 
-		this.executor = executor;
+	public Result submitTask( Callable<Result> task ) {
 		
+		cs.submit(task);
+
+        Result r = null;
 		try {
-			ObjectName name = new ObjectName("com.bryanreinero.firehose:type=Workpool"); 
-			ManagementFactory.getPlatformMBeanServer().registerMBean(this, name); 
-		} catch (Exception e) {
+            Future<Result> future = cs.take();
+            r = future.get();
+
+		} catch (InterruptedException ie ) {
+			// gotta figure out what to do here
+			ie.printStackTrace();
+
+		} catch ( ExecutionException e) {
 			e.printStackTrace();
-		} 
+		} catch ( Exception e ) {
+			e.printStackTrace();
+		}
+        return r;
 	}
+
+    public static void main ( String[] args ) {
+        WorkerPool p = new WorkerPool( 1 );
+
+       Result result =  p.submitTask(new Callable<Result>() {
+            @Override
+            public Result call() throws Exception {
+                System.out.println("Executing my work");
+
+                List<String> messages = new ArrayList<String>();
+                messages.add("success");
+                Result r = new Result( false );
+                r.setResults( messages );
+                return r;
+            }
+        });
+
+        Iterable it = result.getResults();
+        for ( Object o : it )
+            System.out.println( o.toString() );
+
+    }
 }
