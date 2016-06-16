@@ -1,7 +1,5 @@
-package com.bryanreinero.firehose.metrics;
+package com.bryanreinero.firehose.util;
 
-import com.bryanreinero.firehose.util.Result;
-import com.bryanreinero.firehose.util.WorkerPool;
 import org.junit.Test;
 
 import java.util.concurrent.Callable;
@@ -41,7 +39,7 @@ public class WorkerPoolTest {
         final String resultS = "success";
         final Integer integer = 1;
 
-        Result<String> result =  p.submitTask(
+        Result<String> result =   p.submitTask(
                 new Callable<Result<String>>() {
                     @Override
                     public Result<String> call() throws Exception {

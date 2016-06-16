@@ -10,7 +10,6 @@ public class WorkerPool <T extends Result> {
 	public WorkerPool(int t) {
 		es = Executors.newFixedThreadPool( t );
 		cs = new ExecutorCompletionService<Result>( es );
-
 	}
 	
 	public Result submitTask(Callable<Result> task ) {
