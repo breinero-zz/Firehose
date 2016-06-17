@@ -4,6 +4,7 @@ import com.bryanreinero.firehose.cli.CallBack;
 import com.bryanreinero.firehose.cli.CommandLineInterface;
 import com.bryanreinero.firehose.metrics.SampleSet;
 import org.apache.commons.cli.Option;
+import org.apache.commons.cli.ParseException;
 import org.bson.Document;
 
 import javax.naming.NamingException;
@@ -11,8 +12,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.logging.Logger;
 
 public class Application {
+
+    static Logger log = Logger.getLogger( Application.class.getName() );
 
     private Document configuration ;
     private final String name;
@@ -35,19 +39,17 @@ public class Application {
 		cli.addCallBack(key, cb);
 	}
 
-    public void parseCommandLineArgs ( String[] args ) {
+    public void parseCommandLineArgs ( String[] args ) throws Exception {
 
         try {
             cli.addOptions( name );
-        } catch (Exception e) {
-            throw new IllegalStateException ( "Failed to initialize application command line configuration. ", e );
-        }
-
-        try {
             cli.parse( args );
             workers = new WorkerPool( numThreads );
+        } catch (ParseException e) {
+            log.severe( "Failed to parse command line arguments" );
+            throw new IllegalStateException( "Command line parsing failed", e );
         } catch (Exception e) {
-            throw new IllegalStateException ( "Failed to process command line arguments. ", e );
+            throw new Exception ( "Failed to initialize command line interface", e );
         }
     }
 
@@ -150,6 +152,10 @@ public class Application {
         config = Document.parse( sb.toString() );
 
         return config;
+    }
+
+    public void printUsage() {
+        cli.printHelp();
     }
 
 }

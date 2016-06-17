@@ -1,13 +1,12 @@
 package com.bryanreinero.firehose.cli;
 
+import org.apache.commons.cli.*;
+
 import java.io.IOException;
 import java.io.InputStream;
-
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.commons.cli.*;
 
 public class CommandLineInterface {
 
@@ -15,6 +14,7 @@ public class CommandLineInterface {
 
 	private HelpFormatter formatter = new HelpFormatter();
 	private CommandLineParser parser = new GnuParser();
+    private String appName;
 	
 	
 	private Map<String, CallBack> callbacks = new HashMap<String, CallBack>();
@@ -25,7 +25,7 @@ public class CommandLineInterface {
 	
 	
 	public void addOptions( String appName ) throws Exception  {
-		
+		this.appName = appName;
 		InputStream is = CommandLineInterface.class.getClassLoader().getResourceAsStream(appName+".json");
 		
 		try {
@@ -42,7 +42,7 @@ public class CommandLineInterface {
 	}
 
 	public void printHelp() {
-		formatter.printHelp("Firehose", options);
+		formatter.printHelp(appName, options);
 	}
 
 	public void parse(String[] args) throws ParseException {
