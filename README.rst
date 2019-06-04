@@ -249,7 +249,7 @@ Let's again use the DSV import tool as an example. The application framework is 
             }
         });
 
-        // custom command line callback for delimeter
+        // custom command line callback for the input file parameter
         myCallBacks.put("f", new CallBack() {
             @Override
             public void handle(String[] values) {
